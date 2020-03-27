@@ -87,6 +87,7 @@ char *saftercomma(const char *cs, size_t l1);
 int	sscanu8(const char *src, const char *s, u8 *dest, size_t l);
 char *buffstr(buf b, const char *str);
 int buffbd(buf b, size_t max);
+int rnsftoi(const char *s);
 
 
 

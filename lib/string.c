@@ -1308,5 +1308,27 @@ int buffbd(buf b, size_t max)
 }
 
 
+int rnsftoi(const char *s)
+{
+	int i;
+	char str[16];
+	
+	for (i = 0; i < sizeof(str); s++)
+	{
+		if (isdigit(*s))
+		{
+			str[i++] = *s;
+		}
+		else
+		{
+			if (*s != '.')
+				break;
+		}
+	}
+	str[i] = 0;
+
+	return atoi(str);
+}
+
 
 

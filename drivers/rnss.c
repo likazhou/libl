@@ -26,29 +26,6 @@ static rnss_t xRNSS = {0};
 
 
 
-static int rnss_sftoi(const char *s)
-{
-	int i;
-	char str[16];
-	
-	for (i = 0; i < sizeof(str); s++)
-	{
-		if (isdigit(*s))
-		{
-			str[i++] = *s;
-		}
-		else
-		{
-			if (*s != '.')
-				break;
-		}
-	}
-	str[i] = 0;
-
-	return atoi(str);
-}
-
-
 static void rnss_RxParse(rnss_t *p, const char *cmd)
 {
 	char *tmp;
@@ -64,10 +41,10 @@ static void rnss_RxParse(rnss_t *p, const char *cmd)
 		if (p->fixed)
 		{
 			tmp = saftercomma(cmd, 2);
-			p->latitude = rnss_sftoi(tmp);
+			p->latitude = rnsftoi(tmp);
 
 			tmp = saftercomma(tmp, 2);
-			p->longitud = rnss_sftoi(tmp);
+			p->longitud = rnsftoi(tmp);
 		}
 	}
 

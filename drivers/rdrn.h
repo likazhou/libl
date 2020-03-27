@@ -29,6 +29,7 @@ struct rdrn
 	u8			tcnt;
 	u8			tlen;
 	u8			trep;
+	u8			fixed;
 	char		bsi[25];
 	u8			tmsg[RD_MSG_LEN];
 	u8			rmsg[RD_MSG_LEN];
