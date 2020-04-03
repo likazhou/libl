@@ -15,7 +15,6 @@ extern int Image$$RW_IRAM1$$ZI$$Limit;
 #if OS_TYPE == OS_T_RTTHREAD
 
 #include <os/rtt/clock.c>
-#include <os/rtt/device.c>
 #include <os/rtt/idle.c>
 #include <os/rtt/ipc.c>
 #include <os/rtt/irq.c>
@@ -49,6 +48,15 @@ extern int Image$$RW_IRAM1$$ZI$$Limit;
 #endif
 
 
+
+
+void rt_system_power_manager(void)
+{
+	
+	arch_IdleEntry();
+}
+
+
 //----------------------------------------------------------------------------
 //Function Name  :tsk_OsEntry
 //Description    :   进入操作系统
@@ -60,7 +68,7 @@ os_thd_declare(OsEntry, 2048);
 void tsk_OsEntry(void *args)
 {
 
-	rt_thread_idle_hook = arch_IdleEntry;
+//	rt_thread_idle_hook = arch_IdleEntry;
 	sys_Init();
 }
 

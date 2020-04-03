@@ -15,11 +15,11 @@
 #define RT_NAME_MAX					8
 
 //Using RT-Thread components initialization
-#define RT_USING_COMPONENTS_INIT
+//#define RT_USING_COMPONENTS_INIT
 
 
 #if OS_SIZE_TINY
-#define RT_TINY_SIZE
+#define RT_USING_TINY_SIZE
 #define RT_USING_CPU_FFS
 #endif
 
@@ -27,19 +27,21 @@
 /* SECTION: RT_DEBUG */
 /* Thread Debug */
 #define RT_DEBUG
+#define RT_DEBUG_INIT 0
+
 #define RT_THREAD_DEBUG
 
 #define RT_USING_OVERFLOW_CHECK
 #endif
 
 /* Using Hook */
-#define RT_USING_HOOK
+//#define RT_USING_HOOK
+#define RT_USING_PM
 
 /* Using Software Timer */
 /* #define RT_USING_TIMER_SOFT */
 #define RT_TIMER_THREAD_PRIO		4
 #define RT_TIMER_THREAD_STACK_SIZE	512
-#define RT_TIMER_TICK_PER_SECOND	10
 
 /* SECTION: IPC */
 /* Using Semaphore*/
@@ -115,3 +117,4 @@
 // #define RT_USING_BSP_CMSIS
 
 #endif
+

@@ -26,8 +26,8 @@
                                bug when thread has not startup.
  */
 
-#include <rtthread.h>
-#include <rthw.h>
+#include <os/rtt/rtthread.h>
+#include <os/rtt/rthw.h>
 
 extern rt_list_t rt_thread_priority_table[RT_THREAD_PRIORITY_MAX];
 extern struct rt_thread *rt_current_thread;

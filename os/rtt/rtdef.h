@@ -32,7 +32,7 @@
 #define __RT_DEF_H__
 
 /* include rtconfig header to import configuration */
-#include <rtconfig.h>
+#include <os/rtt/rtconfig.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -1023,7 +1023,7 @@ struct rt_device_graphic_ops
 #endif
 
 /* definitions for libc */
-#include "rtlibc.h"
+//#include "rtlibc.h"
 
 #ifdef __cplusplus
 }

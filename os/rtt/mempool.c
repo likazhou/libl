@@ -16,8 +16,8 @@
  * 2012-03-22     Bernard      fix align issue in rt_mp_init and rt_mp_create.
  */
 
-#include <rthw.h>
-#include <rtthread.h>
+#include <os/rtt/rthw.h>
+#include <os/rtt/rtthread.h>
 
 #ifdef RT_USING_MEMPOOL
 

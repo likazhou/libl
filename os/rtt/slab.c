@@ -52,8 +52,8 @@
  *
  */
 
-#include <rthw.h>
-#include <rtthread.h>
+#include <os/rtt/rthw.h>
+#include <os/rtt/rtthread.h>
 
 #define RT_MEM_STATS
 

@@ -19,8 +19,8 @@
  * 2015-07-06     Bernard      Add rt_assert_handler routine.
  */
 
-#include <rtthread.h>
-#include <rthw.h>
+#include <os/rtt/rtthread.h>
+#include <os/rtt/rthw.h>
 
 #ifdef RT_USING_MODULE
 #include <dlmodule.h>
@@ -524,9 +524,6 @@ char *rt_strdup(const char *s)
     return tmp;
 }
 RTM_EXPORT(rt_strdup);
-#if defined(__CC_ARM) || defined(__CLANG_ARM)
-char *strdup(const char *s) __attribute__((alias("rt_strdup")));
-#endif
 #endif
 
 /**
@@ -543,7 +540,9 @@ void rt_show_version(void)
 RTM_EXPORT(rt_show_version);
 
 /* private function */
+#ifndef isdigit
 #define isdigit(c)  ((unsigned)((c) - '0') < 10)
+#endif
 
 #ifdef RT_PRINTF_LONGLONG
 rt_inline int divide(long long *n, int base)
@@ -1373,7 +1372,7 @@ RTM_EXPORT(rt_assert_handler);
 #endif /* RT_DEBUG */
 
 #if !defined (RT_USING_NEWLIB) && defined (RT_USING_MINILIBC) && defined (__GNUC__)
-#include <sys/types.h>
+//#include <sys/types.h>
 void *memcpy(void *dest, const void *src, size_t n) __attribute__((weak, alias("rt_memcpy")));
 void *memset(void *s, int c, size_t n) __attribute__((weak, alias("rt_memset")));
 void *memmove(void *dest, const void *src, size_t n) __attribute__((weak, alias("rt_memmove")));
@@ -1389,7 +1388,7 @@ char *strdup(const char *s) __attribute__((weak, alias("rt_strdup")));
 #endif
 
 int sprintf(char *buf, const char *format, ...) __attribute__((weak, alias("rt_sprintf")));
-int snprintf(char *buf, rt_size_t size, const char *fmt, ...) __attribute__((weak, alias("rt_snprintf")));
+int snprintf(char *buf, size_t size, const char *fmt, ...) __attribute__((weak, alias("rt_snprintf")));
 int vsprintf(char *buf, const char *format, va_list arg_ptr) __attribute__((weak, alias("rt_vsprintf")));
 
 #endif

@@ -30,7 +30,7 @@
 #ifndef RT_DBG_H__
 #define RT_DBG_H__
 
-#include <rtconfig.h>
+#include <os/rtt/rtconfig.h>
 
 /* the debug log will force enable when RT_DEBUG macro is defined */
 #if defined(RT_DEBUG) && !defined(DBG_ENABLE)

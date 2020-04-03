@@ -34,8 +34,8 @@
  * 2013-09-14     Grissiom     add an option check in rt_event_recv
  */
 
-#include <rtthread.h>
-#include <rthw.h>
+#include <os/rtt/rtthread.h>
+#include <os/rtt/rthw.h>
 
 #ifdef RT_USING_HOOK
 extern void (*rt_object_trytake_hook)(struct rt_object *object);
