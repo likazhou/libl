@@ -1,21 +1,7 @@
 /*
- * File      : rthw.h
- * This file is part of RT-Thread RTOS
- * COPYRIGHT (C) 2006 - 2012, RT-Thread Development Team
+ * Copyright (c) 2006-2018, RT-Thread Development Team
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
@@ -23,16 +9,40 @@
  * 2006-04-25     Bernard      add rt_hw_context_switch_interrupt declaration
  * 2006-09-24     Bernard      add rt_hw_context_switch_to declaration
  * 2012-12-29     Bernard      add rt_hw_exception_install declaration
+ * 2017-10-17     Hichard      add some micros
  */
 
 #ifndef __RT_HW_H__
 #define __RT_HW_H__
 
-#include <os/rtt/rtthread.h>
+#include <rtthread.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/*
+ * Some macros define
+ */
+#ifndef HWREG32
+#define HWREG32(x)          (*((volatile rt_uint32_t *)(x)))
+#endif
+#ifndef HWREG16
+#define HWREG16(x)          (*((volatile rt_uint16_t *)(x)))
+#endif
+#ifndef HWREG8
+#define HWREG8(x)           (*((volatile rt_uint8_t *)(x)))
+#endif
+
+#ifndef RT_CPU_CACHE_LINE_SZ
+#define RT_CPU_CACHE_LINE_SZ	32
+#endif
+
+enum RT_HW_CACHE_OPS
+{
+    RT_HW_CACHE_FLUSH      = 0x01,
+    RT_HW_CACHE_INVALIDATE = 0x02,
+};
 
 /*
  * CPU interfaces
@@ -40,9 +50,13 @@ extern "C" {
 void rt_hw_cpu_icache_enable(void);
 void rt_hw_cpu_icache_disable(void);
 rt_base_t rt_hw_cpu_icache_status(void);
+void rt_hw_cpu_icache_ops(int ops, void* addr, int size);
+
 void rt_hw_cpu_dcache_enable(void);
 void rt_hw_cpu_dcache_disable(void);
 rt_base_t rt_hw_cpu_dcache_status(void);
+void rt_hw_cpu_dcache_ops(int ops, void* addr, int size);
+
 void rt_hw_cpu_reset(void);
 void rt_hw_cpu_shutdown(void);
 
@@ -76,7 +90,7 @@ void rt_hw_interrupt_umask(int vector);
 rt_isr_handler_t rt_hw_interrupt_install(int              vector,
                                          rt_isr_handler_t handler,
                                          void            *param,
-                                         char            *name);
+                                         const char      *name);
 
 rt_base_t rt_hw_interrupt_disable(void);
 void rt_hw_interrupt_enable(rt_base_t level);
@@ -97,6 +111,17 @@ void rt_hw_show_memory(rt_uint32_t addr, rt_uint32_t size);
  * Exception interfaces
  */
 void rt_hw_exception_install(rt_err_t (*exception_handle)(void *context));
+
+/*
+ * delay interfaces
+ */
+void rt_hw_us_delay(rt_uint32_t us);
+
+#define RT_DEFINE_SPINLOCK(x)  
+#define RT_DECLARE_SPINLOCK(x)    rt_ubase_t x
+
+#define rt_hw_spin_lock(lock)     *(lock) = rt_hw_interrupt_disable()
+#define rt_hw_spin_unlock(lock)   rt_hw_interrupt_enable(*(lock))
 
 #ifdef __cplusplus
 }

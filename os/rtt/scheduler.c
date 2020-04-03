@@ -1,21 +1,7 @@
 /*
- * File      : scheduler.c
- * This file is part of RT-Thread RTOS
- * COPYRIGHT (C) 2006 - 2012, RT-Thread Development Team
+ * Copyright (c) 2006-2018, RT-Thread Development Team
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
@@ -37,12 +23,11 @@
  * 2013-12-21     Grissiom     add rt_critical_level
  */
 
-#include <os/rtt/rtthread.h>
-#include <os/rtt/rthw.h>
+#include <rtthread.h>
+#include <rthw.h>
 
 static rt_int16_t rt_scheduler_lock_nest;
 extern volatile rt_uint8_t rt_interrupt_nest;
-extern int __rt_ffs(int value);
 
 rt_list_t rt_thread_priority_table[RT_THREAD_PRIORITY_MAX];
 struct rt_thread *rt_current_thread;
@@ -89,28 +74,40 @@ static void _rt_scheduler_stack_check(struct rt_thread *thread)
 {
     RT_ASSERT(thread != RT_NULL);
 
+#if defined(ARCH_CPU_STACK_GROWS_UPWARD)
+	if (*((rt_uint8_t *)((rt_ubase_t)thread->stack_addr + thread->stack_size - 1)) != '#' ||
+#else
     if (*((rt_uint8_t *)thread->stack_addr) != '#' ||
-	(rt_uint32_t)thread->sp <= (rt_uint32_t)thread->stack_addr ||
+#endif
+        (rt_uint32_t)thread->sp <= (rt_uint32_t)thread->stack_addr ||
         (rt_uint32_t)thread->sp >
         (rt_uint32_t)thread->stack_addr + (rt_uint32_t)thread->stack_size)
     {
         rt_uint32_t level;
 
         rt_kprintf("thread:%s stack overflow\n", thread->name);
-        #ifdef RT_USING_FINSH
+#ifdef RT_USING_FINSH
         {
             extern long list_thread(void);
             list_thread();
         }
-        #endif
+#endif
         level = rt_hw_interrupt_disable();
         while (level);
     }
-    else if ((rt_uint32_t)thread->sp <= ((rt_uint32_t)thread->stack_addr + 32))
+#if defined(ARCH_CPU_STACK_GROWS_UPWARD)
+    else if ((rt_uint32_t)thread->sp > ((rt_uint32_t)thread->stack_addr + thread->stack_size))
     {
-        rt_kprintf("warning: %s stack is close to end of stack address.\n",
+        rt_kprintf("warning: %s stack is close to the top of stack address.\n",
                    thread->name);
     }
+#else
+    else if ((rt_uint32_t)thread->sp <= ((rt_uint32_t)thread->stack_addr + 32))
+    {
+        rt_kprintf("warning: %s stack is close to the bottom of stack address.\n",
+                   thread->name);
+    }
+#endif
 }
 #endif
 
@@ -243,6 +240,27 @@ void rt_schedule(void)
             {
                 rt_hw_context_switch((rt_uint32_t)&from_thread->sp,
                                      (rt_uint32_t)&to_thread->sp);
+
+#ifdef RT_USING_SIGNALS
+                if (rt_current_thread->stat & RT_THREAD_STAT_SIGNAL_PENDING)
+                {
+                    extern void rt_thread_handle_sig(rt_bool_t clean_state);
+
+                    rt_current_thread->stat &= ~RT_THREAD_STAT_SIGNAL_PENDING;
+
+                    rt_hw_interrupt_enable(level);
+
+                    /* check signal status */
+                    rt_thread_handle_sig(RT_TRUE);
+                }
+                else
+#endif
+                {
+                    /* enable interrupt */
+                    rt_hw_interrupt_enable(level);
+                }
+
+                return ;
             }
             else
             {
@@ -275,7 +293,7 @@ void rt_schedule_insert_thread(struct rt_thread *thread)
     temp = rt_hw_interrupt_disable();
 
     /* change stat */
-    thread->stat = RT_THREAD_READY;
+    thread->stat = RT_THREAD_READY | (thread->stat & ~RT_THREAD_STAT_MASK);
 
     /* insert thread to ready list */
     rt_list_insert_before(&(rt_thread_priority_table[thread->current_priority]),
@@ -385,14 +403,17 @@ void rt_exit_critical(void)
     level = rt_hw_interrupt_disable();
 
     rt_scheduler_lock_nest --;
-
     if (rt_scheduler_lock_nest <= 0)
     {
         rt_scheduler_lock_nest = 0;
         /* enable interrupt */
         rt_hw_interrupt_enable(level);
 
-        rt_schedule();
+        if (rt_current_thread)
+        {
+            /* if scheduler is started, do a schedule */
+            rt_schedule();
+        }
     }
     else
     {
