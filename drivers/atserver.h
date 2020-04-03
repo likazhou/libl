@@ -6,6 +6,7 @@
 extern "C" {
 #endif
 
+#include <drivers/rdss.h>
 
 
 //Public Defines

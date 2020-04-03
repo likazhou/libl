@@ -20,6 +20,10 @@ extern "C" {
 
 
 //External Functions
+struct tm *gmtime_r(const time_t *timep, struct tm *r);
+struct tm* localtime_r(const time_t* t, struct tm* r);
+time_t mktime(struct tm * const t);
+
 time_t array2timet(u8 *p, int nIsBcd);
 int timet2array(time_t tTime, u8 *p, int nIsBcd);
 time_t getday0(time_t tTime);

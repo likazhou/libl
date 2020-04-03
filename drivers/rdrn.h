@@ -33,7 +33,7 @@ struct rdrn
 	char		bsi[25];
 	u8			tmsg[RD_MSG_LEN];
 	u8			rmsg[RD_MSG_LEN];
-	u32 		simid[RD_SIM_MAX];			/* 本机号: 本机号不为0，则表示有IC卡插入 */
+	u32 		simid;			/* 本机号: 本机号不为0，则表示有IC卡插入 */
 	u32 		destid; 			//指挥机卡号
 	int			latitude;
 	int			longitud;
@@ -54,6 +54,24 @@ typedef struct rdrn rdrn_t;
 
 
 
+//External Functions
+void rdss_PowerEn(void);
+u32 rdss_GetSIM(void);
+int rdss_GetSignal(void);
+char *rdss_GetBSI(void);
+u32 rdss_GetDest(void);
+void rdss_SetDest(u32 id);
+int rdss_TxNow(const void *data, size_t len, int rep);
+
+void rnss_GetLocation(int *latitude, int *longitud);
+time_t rnss_GetTimet(void);
+
+
+//User Functions
+int rdss_ReadMsg(void *p, u8 *rep);
+int rdss_MsgQty(void);
+void rdss_RxDo(const u8 *p, size_t len);
+int rdss_PwrADC(void);
 
 
 

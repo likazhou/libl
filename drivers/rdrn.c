@@ -93,7 +93,7 @@ static void rdrn_RxParse(rdrn_t *p, const char *cmd)
 
 	//获取卡信息
 	if (memscmp(cmd, "ICI,") == 0)
-		p->simid[0] = bin2bcd32(atoi(&cmd[4]));
+		p->simid = bin2bcd32(atoi(&cmd[4]));
 
 	//北斗波束信息
 	if (memscmp(cmd, "BSI,") == 0)
@@ -139,8 +139,16 @@ static void rdrn_RxParse(rdrn_t *p, const char *cmd)
 				{
 					memcpy(p->rmsg, buf, i);
 
+#if RDSS_LEDRX_ENABLE
+					rdss_LedRx(0);
+#endif
 					//接收报文处理
 					rdss_RxDo(buf, i);
+	
+#if RDSS_STAT_ENABLE
+					sprintf((char *)buf, "[RD<] TXR Count : %d\r", ++rd_rcnt);
+					RDRN_DBGOUT((char *)buf);
+#endif
 				}
 			}
 		}
@@ -152,8 +160,6 @@ static void rdrn_RxParse(rdrn_t *p, const char *cmd)
 		//收到反馈关闭发送
 #if RDSS_TX_ENABLE
 //		rdss_Txen(0);
-#else
-		rdss_Cmd(p, "JMS,E");
 #endif
 
 		p->tcnt = 61;
@@ -167,6 +173,72 @@ static void rdrn_RxParse(rdrn_t *p, const char *cmd)
 	}	
 }
 
+
+static void rdss_TxData(rdrn_t *p)
+{
+	int i;
+	char msg[200];
+
+	if (p->tcnt)
+	{
+#if 1 && RDRN_DBGOUT
+		if (((p->tcnt & 0x07) == 0) || (p->tcnt < 11))
+		{
+			sprintf(msg, "[RD ] TXA Countdown: %d\r", p->tcnt);
+			RDRN_DBGOUT(msg);
+		}
+#endif
+		p->tcnt -= 1;
+		return;
+	}
+
+	if (p->signal == 0)
+		return;
+
+	os_sem_wait(&p->tsem);
+
+	if (p->tlen == 0)
+		p->tlen = rdss_ReadMsg(p->tmsg, &p->trep);
+
+	os_sem_signal(&p->tsem);
+
+	if (p->tlen == 0)
+		return;
+
+#if RDSS_LEDTX_ENABLE
+	rdss_LedTx(0);
+#endif
+
+	//打开发送
+#if RDSS_TX_ENABLE
+//	rdss_Txen(1);
+//	os_thd_sleep(100);
+#endif
+
+	os_sem_wait(&p->tsem);
+
+	if (p->destid)
+		i = p->destid;
+	else
+		i = p->simid;
+	sprintf(msg, "$BDTXA,%07X,1,1,%1X", i, p->tmsg[0]);
+	for (i = 1; i < p->tlen; i++)
+	{
+		sprintf(&msg[18 + 2 * i], "%02X", p->tmsg[i]);
+	}
+
+	os_sem_signal(&p->tsem);
+
+	rdss_Output(p, msg);
+
+	//收不到反馈10秒重发
+	p->tcnt = 10;
+
+#if RDSS_STAT_ENABLE
+	sprintf(msg, "[RD>] TXA Count : %d\r", ++rd_tcnt);
+	RDRN_DBGOUT(msg);
+#endif
+}
 
 
 
@@ -188,6 +260,12 @@ void rdrn_Run()
 	rdrn_t *p = &xRDRN;
 	int l;
 
+	p->tmo += 1;
+
+	//更新卡信息
+	if (p->simid == 0)
+		rdss_Cmd(p, "ICA,0,");		
+	
 	//接受并回应
 	do
 	{
@@ -196,15 +274,23 @@ void rdrn_Run()
 		l = buffbd(p->rbuf, 200);
 		if (l)
 		{
+#if 1
 			RDRN_DBGOUT("[RD<] ");
 			RDRN_DBGOUT((char *)p->rbuf->p);
-	
+#endif
 			rdrn_RxParse(p, (char *)&p->rbuf->p[3]);
 			buf_Remove(p->rbuf, l);
 	
 			p->tmo = 0;
 		}
 	} while (l);
+
+	//20秒收不到信息复位
+	if (p->tmo > 20)
+		sys_Reset();
+
+	//发送
+	rdss_TxData(p);
 }
 
 
@@ -212,7 +298,7 @@ void rdrn_Run()
 u32 rdss_GetSIM()
 {
 
-	return xRDRN.simid[0];
+	return xRDRN.simid;
 }
 
 int rdss_GetSignal()

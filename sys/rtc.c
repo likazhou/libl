@@ -31,7 +31,7 @@ void rtc_OsTick()
 	else
 	{
 		rtc_tTime += 1;
-		localtime_r(&rtc_tTime, &rtc_Tm);
+		gmtime_r(&rtc_tTime, &rtc_Tm);
 	}
 }
 
@@ -61,7 +61,7 @@ void rtc_Maintian()
 	else
 	{
 		rtc_tTime = tTime;
-		localtime_r(&rtc_tTime, &rtc_Tm);
+		gmtime_r(&rtc_tTime, &rtc_Tm);
 	}
 }
 
