@@ -46,8 +46,8 @@
  *
  */
 
-#include <rthw.h>
-#include <rtthread.h>
+#include <os/rtt/rthw.h>
+#include <os/rtt/rtthread.h>
 
 #ifndef RT_USING_MEMHEAP_AS_HEAP
 

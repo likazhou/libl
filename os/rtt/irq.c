@@ -10,8 +10,8 @@
  * 2016-08-09     ArdaFu       add interrupt enter and leave hook.
  */
 
-#include <rthw.h>
-#include <rtthread.h>
+#include <os/rtt/rthw.h>
+#include <os/rtt/rtthread.h>
 
 #ifdef RT_USING_HOOK
 
