@@ -30,7 +30,7 @@
 #ifndef CH_H
 #define CH_H
 
-#include <arch/cmx/port_ch/compilers/gcc/chtypes.h>
+#include <arch/cm3/port_ch/compilers/gcc/chtypes.h>
 #include "chconf.h"
 #include "chlicense.h"
 
@@ -472,7 +472,7 @@ typedef uint16_t systime_t;
  */
 typedef struct nil_thread thread_t;
 
-#include <arch/cmx/port_ch/chcore.h>
+#include <arch/cm3/port_ch/chcore.h>
 
 /**
  * @brief   Structure representing a queue of threads.

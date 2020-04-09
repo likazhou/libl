@@ -356,12 +356,12 @@ void rt_hw_cpu_shutdown(void)
 /**
  * reset CPU
  */
-RT_WEAK void rt_hw_cpu_reset(void)
+WEAK void rt_hw_cpu_reset(void)
 {
     SCB_AIRCR = SCB_RESET_VALUE;
 }
 
-#ifdef RT_USING_CPU_FFS
+#if 1//def RT_USING_CPU_FFS
 /**
  * This function finds the first bit set (beginning with the least significant bit)
  * in value and return the index of that bit.

@@ -49,12 +49,13 @@ extern int Image$$RW_IRAM1$$ZI$$Limit;
 
 
 
-
+#ifdef RT_USING_PM
 void rt_system_power_manager(void)
 {
 	
 	arch_IdleEntry();
 }
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -68,7 +69,9 @@ os_thd_declare(OsEntry, 2048);
 void tsk_OsEntry(void *args)
 {
 
-//	rt_thread_idle_hook = arch_IdleEntry;
+#ifdef RT_USING_HOOK
+	rt_thread_idle_sethook(arch_IdleEntry);
+#endif
 	sys_Init();
 }
 

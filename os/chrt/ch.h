@@ -67,7 +67,7 @@
 /** @} */
 
 /* Core headers.*/
-#include <arch/cmx/port_ch/compilers/gcc/chtypes.h>
+#include <arch/cm3/port_ch/compilers/gcc/chtypes.h>
 #include "chconf.h"
 
 #if !defined(_CHIBIOS_RT_CONF_)
@@ -78,7 +78,7 @@
 #include "chchecks.h"
 #include "chsystypes.h"
 #include "chalign.h"
-#include <arch/cmx/port_ch/chcore.h>
+#include <arch/cm3/port_ch/chcore.h>
 #include "chdebug.h"
 #include "chtrace.h"
 #include "chtm.h"

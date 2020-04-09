@@ -110,10 +110,10 @@ typedef mailbox_t				os_mbox_t;
 #define os_sem_waittmo(s, t)	chSemWaitTimeout(s, t)
 #define os_sem_signal(s)		chSemSignal(s)
 
-#define os_mb_init(m, p, s)		rt_mb_init(m, NULL, p, s, RT_IPC_FLAG_FIFO)
-#define os_mb_recv(m, v)		rt_mb_recv(m, v, RT_WAITING_FOREVER)
-#define os_mb_recvtmo(m, v, t)	rt_mb_recv(m, v, t)
-#define os_mb_send(m, v)		rt_mb_send(m, v)
+#define os_mb_init(m, p, s)		chMBObjectInit(m, p, s)
+#define os_mb_recv(m, v)		chMBFetchI(m, v)
+#define os_mb_recvtmo(m, v, t)	chMBFetch(m, v, t)
+#define os_mb_send(m, v)		chMBPostI(m, v)
 
 //External Functions
 

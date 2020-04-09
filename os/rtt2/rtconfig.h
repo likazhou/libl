@@ -15,7 +15,7 @@
 #define RT_NAME_MAX					8
 
 //Using RT-Thread components initialization
-#define RT_USING_COMPONENTS_INIT
+//#define RT_USING_COMPONENTS_INIT
 
 
 #if OS_SIZE_TINY
@@ -107,11 +107,5 @@
 /* SECTION: lwip, a lighwight TCP/IP protocol stack */
 /* #define RT_USING_LWIP */
 
-// <bool name="RT_USING_CMSIS_OS" description="Using CMSIS OS API" default="true" />
-// #define RT_USING_CMSIS_OS
-// <bool name="RT_USING_RTT_CMSIS" description="Using CMSIS in RTT" default="true" />
-// #define RT_USING_RTT_CMSIS
-// <bool name="RT_USING_BSP_CMSIS" description="Using CMSIS in BSP" default="true" />
-// #define RT_USING_BSP_CMSIS
 
 #endif

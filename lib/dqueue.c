@@ -338,7 +338,7 @@ void dque_Wait()
 {
 	u_word2 uv;
 
-	if (os_mb_recv(&dq_mb, (rt_uint32_t *)&uv) == RT_EOK)
+	if (os_mb_recv(&dq_mb, (rt_ubase_t *)&uv) == RT_EOK)
 		_dque_Push(dq_all, uv.word[1], uv.word[0]);
 }
 

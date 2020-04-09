@@ -373,7 +373,9 @@ int  strncasecmp ( const char* s1, const char* s2, size_t len )
 }
 
 /* private function */
+#ifndef isdigit
 #define isdigit(c)  ((unsigned)((c) - '0') < 10)
+#endif
 
 static __INLINE int divide(int *n, int base)
 {

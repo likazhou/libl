@@ -10,15 +10,15 @@
 #define ARCH_T_STM32F10X_XL	4
 #define ARCH_T_STM32F20X	7
 
-#define ARCH_T_LPC176X		8
+#define ARCH_T_LPC176X		16
 
-#define ARCH_T_LM3S5X		12
-#define ARCH_T_LM3S9X		13
+#define ARCH_T_LM3S5X		18
+#define ARCH_T_LM3S9X		19
 
-#define ARCH_T_M051X		16
+#define ARCH_T_M051X		22
 
-#define ARCH_T_STR71X		20
-#define ARCH_T_LPC22XX		21
+#define ARCH_T_STR71X		24
+#define ARCH_T_LPC22XX		25
 
 
 
