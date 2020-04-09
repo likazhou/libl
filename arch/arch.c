@@ -7,27 +7,27 @@
 	(ARCH_TYPE == ARCH_T_LPC176X) || (ARCH_TYPE == ARCH_T_STM32F20X)
 
 #if OS_TYPE == OS_T_RTTHREAD
-#include <arch/cmx/port_rtt/cpuport.c>
+#include <arch/cm3/port_rtt/cpuport.c>
 #endif
 
 #if OS_TYPE == OS_T_CHNIL || OS_TYPE == OS_T_CHRT
-#include <arch/cmx/port_ch/chcore.c>
-#include <arch/cmx/port_ch/chcore_v7m.c>
+#include <arch/cm3/port_ch/chcore.c>
+#include <arch/cm3/port_ch/chcore_v7m.c>
 #endif
 
 #if OS_TYPE == OS_T_FREERTOS
 #if defined(__CC_ARM)   /* ARMCC compiler */
-#include <arch/cmx/port_freertos/RVDS/port.c>
+#include <arch/cm3/port_freertos/RVDS/port.c>
 #elif defined(__IAR_SYSTEMS_ICC__)   /* IAR Compiler */
-#include <arch/cmx/port_freertos/IAR/port.c>
+#include <arch/cm3/port_freertos/IAR/port.c>
 #elif defined(__GNUC__)     /* GNU GCC Compiler */
-#include <arch/cmx/port_freertos/GCC/port.c>
+#include <arch/cm3/port_freertos/GCC/port.c>
 #endif
 #endif
 
 #elif ARCH_TYPE == ARCH_T_M051X
-#include <arch/cmx/port_ch/chcore.c>
-#include <arch/cmx/port_ch/chcore_v6m.c>
+#include <arch/cm3/port_ch/chcore.c>
+#include <arch/cm3/port_ch/chcore_v6m.c>
 
 #endif
 

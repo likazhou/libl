@@ -16,7 +16,7 @@ extern "C" {
 	(ARCH_TYPE == ARCH_T_LM3S9X) || (ARCH_TYPE == ARCH_T_LM3S5X) || \
 	(ARCH_TYPE == ARCH_T_LPC176X) || (ARCH_TYPE == ARCH_T_M051X)
 
-#include <arch/cmx/typedef.h>
+#include <arch/cm3/typedef.h>
 #endif
 
 

@@ -65,9 +65,10 @@
 
 /* Using Dynamic Heap Management */
 #define RT_USING_HEAP
-
 /* Using Small MM */
 #define RT_USING_SMALL_MEM
+/* Using Slab MM */
+//#define RT_USING_SLAB
 
 #if DEVICE_ENABLE
 /* SECTION: Device System */
@@ -109,12 +110,6 @@
 /* SECTION: lwip, a lighwight TCP/IP protocol stack */
 /* #define RT_USING_LWIP */
 
-// <bool name="RT_USING_CMSIS_OS" description="Using CMSIS OS API" default="true" />
-// #define RT_USING_CMSIS_OS
-// <bool name="RT_USING_RTT_CMSIS" description="Using CMSIS in RTT" default="true" />
-// #define RT_USING_RTT_CMSIS
-// <bool name="RT_USING_BSP_CMSIS" description="Using CMSIS in BSP" default="true" />
-// #define RT_USING_BSP_CMSIS
 
 #endif
 
