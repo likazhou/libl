@@ -5,10 +5,10 @@
 
 
 //Internal Functions
-static GPIOMode_TypeDef stm32_GpioMode(int nMode)
+static GPIOMode_TypeDef stm32_GpioMode(int mode)
 {
 
-	switch (nMode) {
+	switch (mode) {
 	case GPIO_M_IN_ANALOG:
 		return GPIO_Mode_AIN;
 	case GPIO_M_OUT_OD:
@@ -22,10 +22,10 @@ static GPIOMode_TypeDef stm32_GpioMode(int nMode)
 	}
 }
 
-static GPIOOType_TypeDef stm32_GpioOType(int nMode)
+static GPIOOType_TypeDef stm32_GpioOType(int mode)
 {
 
-	switch (nMode) {
+	switch (mode) {
 	case GPIO_M_AF_PP:
 	case GPIO_M_OUT_PP:
 		return GPIO_OType_PP;
@@ -34,9 +34,9 @@ static GPIOOType_TypeDef stm32_GpioOType(int nMode)
 	}
 }
 
-static GPIOPuPd_TypeDef stm32_GpioPuPd(int nMode)
+static GPIOPuPd_TypeDef stm32_GpioPuPd(int mode)
 {
-	switch (nMode) {
+	switch (mode) {
 	case GPIO_M_IN_PD:
 		return GPIO_PuPd_DOWN;
 	case GPIO_M_IN_PU:
@@ -47,10 +47,37 @@ static GPIOPuPd_TypeDef stm32_GpioPuPd(int nMode)
 }
 
 //External Functions
-void stm32_GpioClockEnable(int nPort)
+GPIO_TypeDef *arch_GpioPortBase(int port)
 {
 
-	switch (nPort) {
+	switch (port) {
+	case GPIO_P0:
+		return GPIOA;
+	case GPIO_P1:
+		return GPIOB;
+	case GPIO_P2:
+		return GPIOC;
+	case GPIO_P3:
+		return GPIOD;
+	case GPIO_P4:
+		return GPIOE;
+	case GPIO_P5:
+		return GPIOF;
+	case GPIO_P6:
+		return GPIOG;
+	case GPIO_P7:
+		return GPIOH;
+	case GPIO_P8:
+		return GPIOI;
+	default:
+		return NULL;
+	}
+}
+
+void arch_GpioClockEnable(int port)
+{
+
+	switch (port) {
 	case GPIO_P0:
 		RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 		break;
@@ -83,81 +110,54 @@ void stm32_GpioClockEnable(int nPort)
 	}
 }
 
-GPIO_TypeDef *arch_GpioPortBase(int nPort)
-{
-
-	switch (nPort) {
-	case GPIO_P0:
-		return GPIOA;
-	case GPIO_P1:
-		return GPIOB;
-	case GPIO_P2:
-		return GPIOC;
-	case GPIO_P3:
-		return GPIOD;
-	case GPIO_P4:
-		return GPIOE;
-	case GPIO_P5:
-		return GPIOF;
-	case GPIO_P6:
-		return GPIOG;
-	case GPIO_P7:
-		return GPIOH;
-	case GPIO_P8:
-		return GPIOI;
-	default:
-		return NULL;
-	}
-}
-
-void arch_GpioSel(int nPort, int nPin, int GPIO_AF)
+void arch_GpioSel(int port, int pin, int GPIO_AF)
 {
 	
-	GPIO_PinAFConfig(arch_GpioPortBase(nPort),  nPin, GPIO_AF);
+	GPIO_PinAFConfig(arch_GpioPortBase(port),  pin, GPIO_AF);
 }
 
-void arch_GpioConf(int nPort, int nPin, int nMode, int nInit)
+void arch_GpioConf(int port, int pin, int mode, int init)
 {
 	GPIO_InitTypeDef xGpio;
 
-	xGpio.GPIO_Pin = BITMASK(nPin);
-	xGpio.GPIO_Mode = stm32_GpioMode(nMode);
-	xGpio.GPIO_OType = stm32_GpioOType(nMode);
-	xGpio.GPIO_PuPd = stm32_GpioPuPd(nMode);
+	xGpio.GPIO_Pin = BITMASK(pin);
+	xGpio.GPIO_Mode = stm32_GpioMode(mode);
+	xGpio.GPIO_OType = stm32_GpioOType(mode);
+	xGpio.GPIO_PuPd = stm32_GpioPuPd(mode);
 	xGpio.GPIO_Speed = GPIO_Speed_50MHz;
-	stm32_GpioClockEnable(nPort);
+	arch_GpioClockEnable(port);
 	
-	if (nMode & GPIO_M_OUT_MASK)
+	if (mode & GPIO_M_OUT_MASK)
 	{
-		switch (nInit)
+		switch (init)
 		{
 		case GPIO_INIT_HIGH:
-			arch_GpioSet(nPort, nPin, 1);
+			arch_GpioSet(port, pin, 1);
 			break;
 		case GPIO_INIT_LOW:
-			arch_GpioSet(nPort, nPin, 0);
+			arch_GpioSet(port, pin, 0);
 			break;
 		default:
 			break;
 		}
 	}
 	
-	GPIO_Init(arch_GpioPortBase(nPort), &xGpio);
+	GPIO_Init(arch_GpioPortBase(port), &xGpio);
 }
 
-void arch_GpioSet(int nPort, int nPin, int nHL)
+void arch_GpioSet(int port, int pin, int HL)
 {
 
-	if (nHL)
-		GPIO_SetBits(arch_GpioPortBase(nPort), BITMASK(nPin));
+	if (HL)
+		GPIO_SetBits(arch_GpioPortBase(port), BITMASK(pin));
 	else
-		GPIO_ResetBits(arch_GpioPortBase(nPort), BITMASK(nPin));
+		GPIO_ResetBits(arch_GpioPortBase(port), BITMASK(pin));
 }
 
-int arch_GpioRead(int nPort, int nPin)
+int arch_GpioRead(int port, int pin)
 {
 
-	return GPIO_ReadInputDataBit(arch_GpioPortBase(nPort), BITMASK(nPin));
+	return GPIO_ReadInputDataBit(arch_GpioPortBase(port), BITMASK(pin));
 }
 
 

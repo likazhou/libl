@@ -119,7 +119,7 @@ static int rc522_RegRead(spi_t *p, int nReg)
 	int res = 0;
 
 	mf_Nss(0);
-	spi_Transce(p, ((nReg << 1) & 0x7E) | 0x80, &res, 1);
+	spi_TransThenRecv(p, ((nReg << 1) & 0x7E) | 0x80, &res, 1);
 	mf_Nss(1);
 	
 	return res;

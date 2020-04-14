@@ -5,7 +5,6 @@
 
 #if defined(RT_USING_NEWLIB) || defined(RT_USING_MINILIBC)
 #define ERRNO                       1
-#define LWIP_PROVIDE_ERRNO
 #define LWIP_TIMEVAL_PRIVATE		1
 #endif
 

@@ -32,87 +32,92 @@ static void stm32_SpiApbClockCmd(SPI_TypeDef *pSpi, FunctionalState ste)
 void arch_SpiInit(spi_t *p)
 {
 	t_spi_def *pDef = &tbl_bspSpiDef[p->parent.id];
-	SPI_TypeDef *pSpi = stm32_tblSpiId[pDef->chipid];
+	SPI_TypeDef *pSpi = stm32_tbl_spiid[pDef->id];
 	GPIO_InitTypeDef xGpio;
 
 	//Enable SPI Clock
 	stm32_SpiApbClockCmd(pSpi, ENABLE);
 
 	xGpio.GPIO_Speed = GPIO_Speed_50MHz;
-	if (pDef->outmode == DEV_PIN_OD){
-		xGpio.GPIO_Mode = GPIO_Mode_AF;
+	xGpio.GPIO_Mode = GPIO_Mode_AF;
+	if (pDef->outmode == DEV_PIN_OD)
 		xGpio.GPIO_OType = GPIO_OType_OD;
-	}
 	else
-	{
-		xGpio.GPIO_Mode = GPIO_Mode_AF;
 		xGpio.GPIO_OType = GPIO_OType_PP;
-	}
 	
 	//SCK
 	xGpio.GPIO_Pin = BITMASK(pDef->sckpin);
-	stm32_GpioClockEnable(pDef->sckport);
+	arch_GpioClockEnable(pDef->sckport);
 	GPIO_SetBits(arch_GpioPortBase(pDef->sckport), BITMASK(pDef->sckpin));
 	GPIO_Init(arch_GpioPortBase(pDef->sckport), &xGpio);
 	//MOSI
 	xGpio.GPIO_Pin = BITMASK(pDef->mosipin);
-	stm32_GpioClockEnable(pDef->mosiport);
+	arch_GpioClockEnable(pDef->mosiport);
 	GPIO_SetBits(arch_GpioPortBase(pDef->mosiport), BITMASK(pDef->mosipin));
 	GPIO_Init(arch_GpioPortBase(pDef->mosiport), &xGpio);
 	//MISO
 	xGpio.GPIO_Pin = BITMASK(pDef->misopin);
-	stm32_GpioClockEnable(pDef->misoport);
+	arch_GpioClockEnable(pDef->misoport);
 	GPIO_SetBits(arch_GpioPortBase(pDef->misoport), BITMASK(pDef->misopin));
 	GPIO_Init(arch_GpioPortBase(pDef->misoport), &xGpio);
-	//NSS
-	xGpio.GPIO_Pin = BITMASK(pDef->nsspin);
-	stm32_GpioClockEnable(pDef->nssport);
-	GPIO_SetBits(arch_GpioPortBase(pDef->nssport), BITMASK(pDef->nsspin));
-	GPIO_Init(arch_GpioPortBase(pDef->nssport), &xGpio);
-	
+
 	GPIO_PinAFConfig(arch_GpioPortBase(pDef->sckport), pDef->sckpin, GPIO_AF_SPI2);
 	GPIO_PinAFConfig(arch_GpioPortBase(pDef->mosiport), pDef->mosipin, GPIO_AF_SPI2);
 	GPIO_PinAFConfig(arch_GpioPortBase(pDef->misoport), pDef->misopin, GPIO_AF_SPI2);
 	
 }
 
-sys_res arch_SpiConfig(spi_t *p)
+sys_res arch_SpiConfig(spi_t *p, int mode, int latch, int speed)
 {
-	t_spi_def *pDef = &tbl_bspSpiDef[p->parent.id];
-	SPI_TypeDef *pSpi = stm32_tblSpiId[pDef->chipid];
+	SPI_TypeDef *pSpi = stm32_tbl_spiid[p->def->id];
  	SPI_InitTypeDef xSpi;
 
 	xSpi.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
 	xSpi.SPI_Mode = SPI_Mode_Master;
 	xSpi.SPI_DataSize = SPI_DataSize_8b;
 	
-	if (p->sckmode == SPI_SCKIDLE_HIGH)
+	if (mode & 1)
 		xSpi.SPI_CPOL = SPI_CPOL_High;
 	else
 		xSpi.SPI_CPOL = SPI_CPOL_Low;
 	
-	if (p->latchmode == SPI_LATCH_1EDGE)
-		xSpi.SPI_CPHA = SPI_CPHA_1Edge;
-	else
+	if (mode & 2)
 		xSpi.SPI_CPHA = SPI_CPHA_2Edge;
+	else
+		xSpi.SPI_CPHA = SPI_CPHA_1Edge;
+
+	switch(speed)
+	{
+	case SPI_SPEED_HIGH:
+		xSpi.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
+		break;
+	case SPI_SPEED_NORMAL:
+		xSpi.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;
+		break;
+	case SPI_SPEED_LOW:
+		xSpi.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_64;
+		break;
+	default:
+		xSpi.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2;
+		break;
+	}
 	
 	xSpi.SPI_NSS = SPI_NSS_Soft;
-	xSpi.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
 	xSpi.SPI_FirstBit = SPI_FirstBit_MSB;
-	xSpi.SPI_CRCPolynomial = 7;
-	
+	xSpi.SPI_CRCPolynomial = 7;	
+
 	SPI_Init(pSpi, &xSpi);
 	SPI_Cmd(pSpi, ENABLE);
 	
 	return SYS_R_OK;
 }
 
-sys_res arch_SpiSend(spi_t *p, const void *pSend, size_t nLen)
+sys_res arch_SpiSend(spi_t *p, const void *send, size_t len)
 {
-	SPI_TypeDef *pSpi = stm32_tblSpiId[tbl_bspSpiDef[p->parent.id].chipid];
+	SPI_TypeDef *pSpi = stm32_tbl_spiid[p->def->id];
 	u8 *pData = (u8 *)p;
 
-	for (; nLen; nLen--)
+	for (; len; len--)
 	{
 		while (SPI_I2S_GetFlagStatus(pSpi, SPI_I2S_FLAG_TXE) == RESET);
 		pSpi->DR = *pData++;
@@ -121,31 +126,34 @@ sys_res arch_SpiSend(spi_t *p, const void *pSend, size_t nLen)
 	return SYS_R_OK;
 }
 
-sys_res arch_SpiRecv(spi_t *p, u8 *pRec, size_t nLen)
+sys_res arch_SpiRecv(spi_t *p, u8 *rec, size_t len)
 {
-	SPI_TypeDef *pSpi = stm32_tblSpiId[tbl_bspSpiDef[p->parent.id].chipid];
+	SPI_TypeDef *pSpi = stm32_tbl_spiid[p->def->id];
 
-	for (; nLen; nLen--)
+	for (; len; len--)
 	{
 		while (SPI_I2S_GetFlagStatus(pSpi, SPI_I2S_FLAG_RXNE) == RESET);
-		*pRec++ = pSpi->DR;
+		*rec++ = pSpi->DR;
 	}
 	
 	return SYS_R_OK;
 }
 
-sys_res arch_SpiTransce(spi_t *p, int nCmd, u8 *pRec, size_t nLen)
+sys_res arch_SpiTransce(spi_t *p, const void *send, size_t slen, u8 *rec, size_t rlen)
 {
-	SPI_TypeDef *pSpi = stm32_tblSpiId[tbl_bspSpiDef[p->parent.id].chipid];
+	SPI_TypeDef *pSpi = stm32_tbl_spiid[tbl_bspSpiDef[p->parent.id].chipid];
+	u8 *tp = (u8 *)send;
 
-	while (SPI_I2S_GetFlagStatus(pSpi, SPI_I2S_FLAG_TXE) == RESET);
+	for (; slen; slen--)
+	{
+		while (SPI_I2S_GetFlagStatus(pSpi, SPI_I2S_FLAG_TXE) == RESET);
+		pSpi->DR = *tp++;
+	}
 	
-	pSpi->DR = nCmd;
-	
-	for (; nLen; nLen--)
+	for (; rlen; rlen--)
 	{
 		while (SPI_I2S_GetFlagStatus(pSpi, SPI_I2S_FLAG_RXNE) == RESET);
-		*pRec++ = pSpi->DR;
+		*rec++ = pSpi->DR;
 	}
 	
 	return SYS_R_OK;

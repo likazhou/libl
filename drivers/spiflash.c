@@ -8,16 +8,18 @@
 
 #define SPIF_JEDEC_MX			0x20C2
 #define SPIF_JEDEC_SST			0x25BF
+#define SPIF_JEDEC_AT			0x271F
 
 #define SPIF_JEDEC_MX25L16		0x1520C2
 #define SPIF_JEDEC_MX25L32		0x1620C2
 #define SPIF_JEDEC_MX25L64		0x1720C2
 #define SPIF_JEDEC_SST25VF16	0x4125BF
 #define SPIF_JEDEC_SST25VF32	0x4A25BF
+#define SPIF_JEDEC_AT45DB32		0x01271F
 
 #define SPIF_T_NULL				0
-#define SPIF_T_MX25LXX			1
-#define SPIF_T_SST25VFXX		2
+#define SPIF_T_PROG_PP			1
+#define SPIF_T_PROG_AAI			2
 
 
 //Command Defines
@@ -52,7 +54,7 @@
 
 //Private Typedefs
 typedef struct {
-	int		size;
+	int	size;
 	u8	type[BSP_SPIF_QTY];
 #if SPI_SEL_ENABLE
 	u8	csid[BSP_SPIF_QTY];
@@ -88,7 +90,7 @@ static spi_t *_spif_SpiGet()
 	spi_t *p;
 	
 	p = spi_Open(SPIF_COMID, OS_TMO_FOREVER);
-	spi_Config(p, SPI_SCKIDLE_LOW, SPI_LATCH_1EDGE, 0);
+	spi_Config(p, SPI_MODE_0, SPI_ORDER_MSB, SPI_SPEED_HIGH);
 	return p;
 }
 
@@ -98,7 +100,7 @@ static void _spif_WaitIdle(spi_t *p)
 
 	for (nTmo = 50000; (nSte & SPIF_SR_BUSY) && nTmo; nTmo--)
 	{
-		spi_Transce(p, &nCmd, 1, &nSte, 1);
+		spi_TransThenRecv(p, &nCmd, 1, &nSte, 1);
 	}
 }
 
@@ -124,7 +126,7 @@ static u32 _spif_Probe(spi_t *p)
 
 	_spif_WriteDisable(p);
 	
-	if (spi_Transce(p, &nCmd, 1, &nId, 3) == SYS_R_OK)
+	if (spi_TransThenRecv(p, &nCmd, 1, &nId, 3) == SYS_R_OK)
 	{
 		nCmd = SPIF_CMD_WRSR_ENABLE;
 		spi_Send(p, &nCmd, 1);
@@ -148,7 +150,7 @@ static sys_res _spif_Read(spi_t *p, adr_t adr, void *pData, size_t nLen)
 	aBuf[2] = adr >> 8;
 	aBuf[3] = adr;
 	
-	spi_Transce(p, aBuf, sizeof(aBuf), pData, nLen);
+	spi_TransThenRecv(p, aBuf, sizeof(aBuf), pData, nLen);
 	
 	return res;
 }
@@ -240,8 +242,8 @@ void spif_Init()
 {
 	p_spif_info p = &spif_info;
 	spi_t *pSpi;
-	int i, j, nRetry;
-	u32 nJedecID;
+	int i, j;
+	u32 jedec;
 
 #if SPIF_LOCK_ENABLE
 	os_sem_init(&spif_sem, 1);
@@ -250,64 +252,58 @@ void spif_Init()
 
 	pSpi = _spif_SpiGet();
 	p->size = 0;
+#if SPI_SEL_ENABLE
 	for (i = 0, j = 0; i < BSP_SPIF_QTY; i++)
 	{
-#if SPI_SEL_ENABLE
 		spi_CsSel(pSpi, tbl_bspSpifCsid[i]);
 #endif
-		for (nRetry = 0; nRetry < 3; nRetry++)
+		jedec = _spif_Probe(pSpi);
+		if ((jedec & 0xFFFF) == SPIF_JEDEC_MX)
 		{
-			nJedecID = _spif_Probe(pSpi);
-			if ((nJedecID & 0xFFFF) == SPIF_JEDEC_MX)
+			switch (jedec)
 			{
-				switch (nJedecID)
-				{
-				case SPIF_JEDEC_MX25L64:
-					p->size += 2048;
-					break;
-				case SPIF_JEDEC_MX25L32:
-					p->size += 1024;
-					break;
-				default:
-					p->size += 512;
-					break;
-				}
-#if SPI_SEL_ENABLE
-				p->csid[j] = tbl_bspSpifCsid[i];
-#endif
-				p->type[j] = SPIF_T_MX25LXX;
-				j += 1;
+			case SPIF_JEDEC_MX25L64:
+				p->size += 2048;
 				break;
-
-			}
-			if ((nJedecID & 0xFFFF) == SPIF_JEDEC_SST)
-			{
-				switch (nJedecID)
-				{
-				case SPIF_JEDEC_SST25VF32:
-					p->size += 1024;
-					break;
-				default:
-					p->size += 512;
-					break;
-				}
-#if SPI_SEL_ENABLE
-				p->csid[j] = tbl_bspSpifCsid[i];
-#endif
-				p->type[j] = SPIF_T_SST25VFXX;
-				j += 1;
+			case SPIF_JEDEC_MX25L32:
+				p->size += 1024;
+				break;
+			default:
+				p->size += 512;
 				break;
 			}
-#if OS_TYPE
-			os_thd_slp1tick();
-#else
-			sys_Delay(10000);
+#if SPI_SEL_ENABLE
+			p->csid[j] = tbl_bspSpifCsid[i];
 #endif
+			p->type[j] = SPIF_T_PROG_PP;
+			j += 1;
 		}
+		if ((jedec & 0xFFFF) == SPIF_JEDEC_SST)
+		{
+			switch (jedec)
+			{
+			case SPIF_JEDEC_SST25VF32:
+				p->size += 1024;
+				break;
+			default:
+				p->size += 512;
+				break;
+			}
 #if SPI_SEL_ENABLE
-		spif_dbgJedec[i] = nJedecID;
+			p->csid[j] = tbl_bspSpifCsid[i];
 #endif
+			p->type[j] = SPIF_T_PROG_AAI;
+			j += 1;
+		}
+#if OS_TYPE
+		os_thd_slp1tick();
+#else
+		sys_Delay(10000);
+#endif
+#if SPI_SEL_ENABLE
+		spif_dbgJedec[i] = jedec;
 	}
+#endif
 	
 	spi_Close(pSpi);
 	
@@ -367,7 +363,7 @@ void spif_Program(int nSec, const void *pData)
 
 	switch (p->type[nSec / SPIF_SEC_QTY])
 	{
-	case SPIF_T_MX25LXX:
+	case SPIF_T_PROG_PP:
 		_spif_Program_PP(pSpi, (nSec & (SPIF_SEC_QTY - 1)) * SPIF_SEC_SIZE, pData, SPIF_SEC_SIZE);
 		break;
 	default:

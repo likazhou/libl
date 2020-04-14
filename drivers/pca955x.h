@@ -2,8 +2,6 @@
 #define __PCA955X_H__
 
 
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif

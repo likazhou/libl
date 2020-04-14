@@ -9,7 +9,7 @@ static TIM_TypeDef * const stm32_tblTimBase[ARCH_TIMER_QTY] = {
 	TIM7,
 };
 
-static u32 const stm32_tblTimAPB[ARCH_TIMER_QTY] = {
+static const u32 stm32_tblTimAPB[ARCH_TIMER_QTY] = {
 	RCC_APB1Periph_TIM2,
 	RCC_APB1Periph_TIM3,
 	RCC_APB1Periph_TIM4,
@@ -18,7 +18,7 @@ static u32 const stm32_tblTimAPB[ARCH_TIMER_QTY] = {
 	RCC_APB1Periph_TIM7,
 };
 
-static IRQn_Type const stm32_tblTimIRQn[ARCH_TIMER_QTY] = {
+static const IRQn_Type stm32_tblTimIRQn[ARCH_TIMER_QTY] = {
 	TIM2_IRQn,
 	TIM3_IRQn,
 	TIM4_IRQn,

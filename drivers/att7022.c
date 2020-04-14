@@ -59,12 +59,12 @@ static sys_res att7022_Write(u32 nReg, u32 nData)
 	os_thd_slp1tick();
 	//读校验1寄存器
 	nTemp = ATT7022_REG_WSPIData1;
-	spi_Transce(p->spi, &nTemp, 1, &nCrc1, 3);
+	spi_TransThenRecv(p->spi, &nTemp, 1, &nCrc1, 3);
 	nCrc1 &= ATT7022_DATA_MASK;
 	//读校验2寄存器
 #if 0
 	nTemp = ATT7022_REG_WSPIData2;
-	spi_Transce(p->spi, &nTemp, 1, &nCrc2, 3);
+	spi_TransThenRecv(p->spi, &nTemp, 1, &nCrc2, 3);
 	nCrc2 &= ATT7022_DATA_MASK;
 #else
 	nCrc2 = nCrc1;
@@ -280,14 +280,14 @@ u32 att7022_Read(u32 nReg)
 	att7022_SpiGet();
 
 	//读数据寄存器
-	spi_Transce(p->spi, &nReg, 1, &nData, 3);
+	spi_TransThenRecv(p->spi, &nReg, 1, &nData, 3);
 	os_thd_slp1tick();
 	invert(&nData, 3);
 	nData &= ATT7022_DATA_MASK;
 	
 	//读校验寄存器	
 	nReg = ATT7022_REG_RSPIData;
-	spi_Transce(p->spi, &nReg, 1, &nCrc, 3);
+	spi_TransThenRecv(p->spi, &nReg, 1, &nCrc, 3);
 	invert(&nCrc, 3);
 	nCrc &= ATT7022_DATA_MASK;
 
@@ -543,7 +543,7 @@ sys_res att7022_GetHarmonic(int Ch, s16 *pbuf)
 		att7022_SpiGet();
 		for (i = 0; i < 240; i++)
 		{
-			spi_Transce(p->spi, &nReg, 1, &nData, 3);//读取数据
+			spi_TransThenRecv(p->spi, &nReg, 1, &nData, 3);//读取数据
 			invert(&nData, 3);
 			nData &= ATT7022_DATA_MASK;
 			if (i < ATT7022_SAMPLEPOINT)

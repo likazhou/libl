@@ -5,7 +5,7 @@
 
 //Private const variables
 #if CHL_PRECODE_ENABLE
-static u8 const tbl_chlHeaderCodes[] = {0xFE, 0xFE, 0xFE};
+static const u8 tbl_chlHeaderCodes[] = {0xFE, 0xFE, 0xFE};
 #endif
 
 

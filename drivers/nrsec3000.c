@@ -99,7 +99,7 @@ sys_res nrsec3000_RcvINS(p_nrsec3000 p, u8 *rbuf, u8 ins,int cnt)
 	/* receive ins */
 	for (; cnt>0; cnt--)
 	{
-		spi_TransChar(p->spi, TR_INS, rbuf);
+		spi_Transmit(p->spi, TR_INS, rbuf);
 		if (rbuf[0] == ins)
 			return SYS_R_OK;
     }
@@ -111,14 +111,14 @@ u16 nrsec3000_RcvLEN(p_nrsec3000 p, size_t tbufLen, u8 *rbuf)
 	/* receive length */
 	u16 nLen = 0;
 
-	if (spi_TransChar(p->spi, TR_INS, &rbuf[0])== SYS_R_OK)
+	if (spi_Transmit(p->spi, TR_INS, &rbuf[0])== SYS_R_OK)
 	{
 		switch (tbufLen)
 		{
 		case 1:
 			return rbuf[0];
 		case 2:
-			if (spi_TransChar(p->spi, TR_INS, &rbuf[1]) == SYS_R_OK){
+			if (spi_Transmit(p->spi, TR_INS, &rbuf[1]) == SYS_R_OK){
 				if (rbuf[0] != 0xFF)
 					nLen = rbuf[0] * 0x100 + rbuf[1];
 				else
@@ -141,7 +141,7 @@ sys_res nrsec3000_RcvData(p_nrsec3000 p,u8 *rbuf,u8 rbufLen)
 	
 	for (i = 0; i < rbufLen; i++)
 	{
-		res = spi_TransChar(p->spi, TR_INS, &rbuf[i]); 
+		res = spi_Transmit(p->spi, TR_INS, &rbuf[i]); 
 		if(res != SYS_R_OK)
 			break;
 	}
@@ -156,10 +156,10 @@ sys_res nrsec3000_RcvSW(p_nrsec3000 p,u8 *rbuf,int cnt)
 	/* receive state word */
 	for(; cnt > 0; cnt--)
 	{
-		spi_TransChar(p->spi, TR_INS, &rbuf[0]);
+		spi_Transmit(p->spi, TR_INS, &rbuf[0]);
 		if (rbuf[0] == 0x90)
 		{
-			spi_TransChar(p->spi, TR_INS, &rbuf[0]);
+			spi_Transmit(p->spi, TR_INS, &rbuf[0]);
 			if (rbuf[0] == 0x00)
 				return SYS_R_OK;
 		}

@@ -3,14 +3,6 @@
 
 
 //Internal Functions
-#if OS_TYPE
-static void stm32_OsTickInit()
-{
-
-	SysTick_Config(MCU_CLOCK / (1000 / OS_TICK_MS));
-	SysTick->CTRL |= SysTick_CLKSource_HCLK;
-}
-#endif
 
 
 
@@ -88,15 +80,14 @@ static void stm32_RccInit()
 
 #if OS_TYPE
 	//SysTick Initialize
-	stm32_OsTickInit();
+	SysTick_Config(MCU_CLOCK / (1000 / OS_TICK_MS));
+	SysTick->CTRL |= SysTick_CLKSource_HCLK;
 #endif
 }
 
 
 static void stm32_IrqInit()
 {
-
-	SCB->VTOR = NVIC_VectTab_FLASH + BOOTLOADER_SIZE;
 
 #if IRQ_ENABLE
 	arch_IrqPri(EXTI0_IRQn, 0);
@@ -139,9 +130,6 @@ static void stm32_GpioInit()
 						   	RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD |
 							RCC_APB2Periph_GPIOE | RCC_APB2Periph_GPIOF |
 							RCC_APB2Periph_GPIOG, DISABLE);
-
-	//Ê¹ÄÜSWD,½ûÓÃJTAG
-	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
 }
 
 

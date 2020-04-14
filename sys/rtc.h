@@ -23,6 +23,7 @@ extern "C" {
 #define RTC_T_R202X				(RTC_T_I2C | 2)
 #define RTC_T_RX802X			(RTC_T_I2C | 3)
 #define RTC_T_M41T8X			(RTC_T_I2C | 4)
+#define RTC_T_PCF8526X			(RTC_T_I2C | 5)
 
 
 

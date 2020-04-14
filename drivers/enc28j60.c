@@ -17,12 +17,12 @@ static u32 enc28j60_ReadOp(u32 op, u32 address)
 	os_mut_wait(mut_SPI1, 0xFFFF);
 	
 	ENC28J60_CS(0);
-	spi_Transce(BSPI1, op | (address & ADDR_MASK));
-	nResult = spi_Transce(BSPI1, 0xFF);
+	spi_TransThenRecv(BSPI1, op | (address & ADDR_MASK));
+	nResult = spi_TransThenRecv(BSPI1, 0xFF);
 	//do dummy read if needed (for mac and mii, see datasheet page 29)
 	if (address & 0x80)
 	{
-		nResult = spi_Transce(BSPI1, 0xFF);
+		nResult = spi_TransThenRecv(BSPI1, 0xFF);
 	}
 	ENC28J60_CS(1);
 	
@@ -38,9 +38,9 @@ static void enc28j60_WriteOp(u32 op, u32 address, u32 data)
 	
 	ENC28J60_CS(0);
 	//issue write command
-	spi_Transce(BSPI1, op | (address & ADDR_MASK));
+	spi_TransThenRecv(BSPI1, op | (address & ADDR_MASK));
 	//write data
-	spi_Transce(BSPI1, data);
+	spi_TransThenRecv(BSPI1, data);
 	ENC28J60_CS(1);
 	
 	os_mut_release(mut_SPI1);
@@ -53,11 +53,11 @@ static void enc28j60_ReadBuffer(u32 len, u8 *data)
 	
 	ENC28J60_CS(0);
 	//issue read command
-	spi_Transce(BSPI1, ENC28J60_READ_BUF_MEM);
+	spi_TransThenRecv(BSPI1, ENC28J60_READ_BUF_MEM);
 	while (len--)
 	{
 		//read data
-		*data++ = spi_Transce(BSPI1, 0xFF);
+		*data++ = spi_TransThenRecv(BSPI1, 0xFF);
 	}
 	*data='\0';
 	ENC28J60_CS(1);
@@ -72,10 +72,10 @@ static void enc28j60_WriteBuffer(u32 len, u8 *data)
 	
 	ENC28J60_CS(0);
 	//issue write command
-	spi_Transce(BSPI1, ENC28J60_WRITE_BUF_MEM);
+	spi_TransThenRecv(BSPI1, ENC28J60_WRITE_BUF_MEM);
 	while (len--)
 	{
-		spi_Transce(BSPI1, *data++);
+		spi_TransThenRecv(BSPI1, *data++);
 	}
 	ENC28J60_CS(1);
 	

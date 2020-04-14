@@ -56,7 +56,7 @@ static int sc16is7x_RegRead(int nReg, int nChl)
 
 	nReg = BITMASK(7) | (nReg << 3) | nChl;
 	sc16is7x_Nss(0);
-	spi_Transce(sc16is7x_spi, nReg, &nData, 1);
+	spi_TransThenRecv(sc16is7x_spi, nReg, &nData, 1);
 	sc16is7x_Nss(1);
 	return nData;
 }
@@ -185,7 +185,7 @@ void sc16is7x_ItHandler()
 				
 				sc16is7x_Nss(0);
 				
-				if (spi_Transce(sc16is7x_spi, nReg, aTemp, nLen) == SYS_R_OK)
+				if (spi_TransThenRecv(sc16is7x_spi, nReg, aTemp, nLen) == SYS_R_OK)
 					dque_Push(p->parent.id | UART_DQUE_RX_CHL, aTemp, nLen);
 				
 				sc16is7x_Nss(1);

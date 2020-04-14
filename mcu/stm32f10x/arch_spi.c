@@ -32,39 +32,36 @@ static void stm32_SpiApbClockCmd(SPI_TypeDef *pSpi, FunctionalState ste)
 void arch_SpiInit(spi_t *p)
 {
 	p_spi_def pDef = &tbl_bspSpiDef[p->parent.id];
-	SPI_TypeDef *pSpi = stm32_tblSpiId[pDef->chipid];
+	SPI_TypeDef *pSpi = stm32_tblSpiId[pDef->id];
 	GPIO_InitTypeDef xGpio;
 
 	//Enable SPI Clock
 	stm32_SpiApbClockCmd(pSpi, ENABLE);
 
-	xGpio.GPIO_Speed = GPIO_Speed_10MHz;
-	if (pDef->outmode == DEV_PIN_OD)
-		xGpio.GPIO_Mode = GPIO_Mode_AF_OD;
-	else
-		xGpio.GPIO_Mode = GPIO_Mode_AF_PP;
+	xGpio.GPIO_Speed = GPIO_Speed_50MHz;
+	xGpio.GPIO_Mode = pDef->outmode == DEV_PIN_OD ? GPIO_Mode_AF_OD : GPIO_Mode_AF_PP;
 	
 	//SCK
 	xGpio.GPIO_Pin = BITMASK(pDef->sckpin);
-	stm32_GpioClockEnable(pDef->sckport);
+	arch_GpioClockEnable(pDef->sckport);
 	GPIO_SetBits(arch_GpioPortBase(pDef->sckport), BITMASK(pDef->sckpin));
 	GPIO_Init(arch_GpioPortBase(pDef->sckport), &xGpio);
 	
 	//MOSI
 	xGpio.GPIO_Pin = BITMASK(pDef->mosipin);
-	stm32_GpioClockEnable(pDef->mosiport);
+	arch_GpioClockEnable(pDef->mosiport);
 	GPIO_SetBits(arch_GpioPortBase(pDef->mosiport), BITMASK(pDef->mosipin));
 	GPIO_Init(arch_GpioPortBase(pDef->mosiport), &xGpio);
 	
 	//MISO
 	xGpio.GPIO_Pin = BITMASK(pDef->misopin);
-	stm32_GpioClockEnable(pDef->misoport);
+	arch_GpioClockEnable(pDef->misoport);
 	GPIO_SetBits(arch_GpioPortBase(pDef->misoport), BITMASK(pDef->misopin));
 	GPIO_Init(arch_GpioPortBase(pDef->misoport), &xGpio);
 	
 	//NSS
 	xGpio.GPIO_Pin = BITMASK(pDef->nsspin);
-	stm32_GpioClockEnable(pDef->nssport);
+	arch_GpioClockEnable(pDef->nssport);
 	GPIO_SetBits(arch_GpioPortBase(pDef->nssport), BITMASK(pDef->nsspin));
 	GPIO_Init(arch_GpioPortBase(pDef->nssport), &xGpio);
 }
@@ -78,17 +75,8 @@ sys_res arch_SpiConfig(spi_t *p)
 	xSpi.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
 	xSpi.SPI_Mode = SPI_Mode_Master;
 	xSpi.SPI_DataSize = SPI_DataSize_8b;
-	
-	if (p->sckmode == SPI_SCKIDLE_HIGH)
-		xSpi.SPI_CPOL = SPI_CPOL_High;
-	else
-		xSpi.SPI_CPOL = SPI_CPOL_Low;
-	
-	if (p->latchmode == SPI_LATCH_1EDGE)
-		xSpi.SPI_CPHA = SPI_CPHA_1Edge;
-	else
-		xSpi.SPI_CPHA = SPI_CPHA_2Edge;
-	
+	xSpi.SPI_CPOL = p->sckmode == SPI_SCKIDLE_HIGH ? SPI_CPOL_High : SPI_CPOL_Low;
+	xSpi.SPI_CPHA = p->latchmode == SPI_LATCH_1EDGE ? SPI_CPHA_1Edge : SPI_CPHA_2Edge;
 	xSpi.SPI_NSS = SPI_NSS_Soft;
 	xSpi.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
 	xSpi.SPI_FirstBit = SPI_FirstBit_MSB;

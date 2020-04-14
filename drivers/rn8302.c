@@ -121,14 +121,14 @@ int rn8302_Read(u16 nReg, void *pData, size_t nLen)
 
 	//¶ÁÊý¾Ý¼Ä´æÆ÷
 	nData = 0;
-	spi_Transce(p->spi, &nReg, 2, &nData, nLen);
+	spi_TransThenRecv(p->spi, &nReg, 2, &nData, nLen);
 	invert(&nData, nLen);
 
 	//¶ÁÐ£Ñé¼Ä´æÆ÷
 	os_thd_slp1tick();
 	nReg = RN8302_REG_RData;
 	nCrc = 0;
-	spi_Transce(p->spi, &nReg, 2, &nCrc, 4);
+	spi_TransThenRecv(p->spi, &nReg, 2, &nCrc, 4);
 	switch (nLen)
 	{
 	case 2:
@@ -176,7 +176,7 @@ int rn8302_Write(u16 nReg, const void *pData, size_t nLen)
 	os_thd_slp1tick();
 	nReg = RN8302_REG_WData;
 	nCrc = 0;
-	spi_Transce(p->spi, &nReg, 2, &nCrc, 3);
+	spi_TransThenRecv(p->spi, &nReg, 2, &nCrc, 3);
 	switch (nLen)
 	{
 	case 1:
