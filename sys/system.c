@@ -280,7 +280,6 @@ void sys_Init()
 	for (pSpi = dev_Spi, i = 0; pSpi < ARR_ENDADR(dev_Spi); pSpi++, i++)
 	{
 		pSpi->parent.id = i;
-		pSpi->csid = SPI_CSID_INVALID;
 #if SPI_SOFTWARE
 		spibus_Init(pSpi);
 #else

@@ -1,10 +1,12 @@
 
 
+#if ARCH_TYPE == ARCH_T_STM32F40X
+#include <arch/cm4/port_rtt/cpuport.c>
 
-#if (ARCH_TYPE == ARCH_T_STM32F10X_HD) || (ARCH_TYPE == ARCH_T_STM32F10X_MD) || \
-	(ARCH_TYPE == ARCH_T_STM32F10X_CL) || (ARCH_TYPE == ARCH_T_STM32F10X_XL) || \
-	(ARCH_TYPE == ARCH_T_LM3S5X) || (ARCH_TYPE == ARCH_T_LM3S9X) || \
-	(ARCH_TYPE == ARCH_T_LPC176X) || (ARCH_TYPE == ARCH_T_STM32F20X)
+#elif	(ARCH_TYPE == ARCH_T_STM32F10X_HD) || (ARCH_TYPE == ARCH_T_STM32F10X_MD) || \
+		(ARCH_TYPE == ARCH_T_STM32F10X_CL) || (ARCH_TYPE == ARCH_T_STM32F10X_XL) || \
+		(ARCH_TYPE == ARCH_T_LM3S5X) || (ARCH_TYPE == ARCH_T_LM3S9X) || \
+		(ARCH_TYPE == ARCH_T_LPC176X) || (ARCH_TYPE == ARCH_T_STM32F20X)
 
 #if OS_TYPE == OS_T_RTTHREAD
 #include <arch/cm3/port_rtt/cpuport.c>
@@ -33,10 +35,41 @@
 
 
 
+#if (ARCH_TYPE == ARCH_T_STM32F40X) || (ARCH_TYPE == ARCH_T_STM32F42X)
+#include <mcu/stm32f4xx/stm32f4xx_ll_adc.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_crc.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_dac.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_dma.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_dma2d.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_exti.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_fmc.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_fsmc.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_gpio.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_i2c.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_lptim.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_pwr.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_rcc.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_rng.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_rtc.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_sdmmc.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_spi.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_tim.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_usart.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_usb.c>
+#include <mcu/stm32f4xx/stm32f4xx_ll_utils.c>
+
+#include <mcu/stm32f4xx/system_stm32f4xx.c>
+
+#include <mcu/stm32f4xx/arch.c>
+#include <mcu/stm32f4xx/arch_gpio.c>
+#include <mcu/stm32f4xx/arch_iwdg.c>
+#include <mcu/stm32f4xx/arch_spi.c>
+#include <mcu/stm32f4xx/arch_uart.c>
 
 
-#if (ARCH_TYPE == ARCH_T_STM32F10X_HD) || (ARCH_TYPE == ARCH_T_STM32F10X_MD) || \
-	(ARCH_TYPE == ARCH_T_STM32F10X_CL) || (ARCH_TYPE == ARCH_T_STM32F10X_XL)
+
+#elif	(ARCH_TYPE == ARCH_T_STM32F10X_HD) || (ARCH_TYPE == ARCH_T_STM32F10X_MD) || \
+		(ARCH_TYPE == ARCH_T_STM32F10X_CL) || (ARCH_TYPE == ARCH_T_STM32F10X_XL)
 
 #if defined(__GNUC__) && (__GNUC__ > 4)    /* GNU GCC Compiler */
 #if ARCH_TYPE == ARCH_T_STM32F10X_XL

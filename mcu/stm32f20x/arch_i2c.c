@@ -29,13 +29,13 @@ static sys_res stm32_I2cUnlock(i2c_t *p)
 	xGpio.GPIO_Mode = GPIO_Mode_OUT;
 	xGpio.GPIO_OType = GPIO_OType_OD;
 	xGpio.GPIO_Pin = BITMASK(p->def->sclpin);
-	stm32_GpioClockEnable(p->def->sclport);
+	arch_GpioClockEnable(p->def->sclport);
 	GPIO_Init(arch_GpioPortBase(p->def->sclport), &xGpio);
 	//SDA ==> input
 	xGpio.GPIO_Mode = GPIO_Mode_IN;
 	xGpio.GPIO_PuPd =GPIO_PuPd_NOPULL;
 	xGpio.GPIO_Pin = BITMASK(p->def->sdapin);
-	stm32_GpioClockEnable(p->def->sdaport);
+	arch_GpioClockEnable(p->def->sdaport);
 	GPIO_Init(arch_GpioPortBase(p->def->sdaport), &xGpio);
 
 	for (i = 0; i < 10; i++)
@@ -83,12 +83,12 @@ sys_res arch_I2cInit(i2c_t *p)
 	xGpio.GPIO_OType = GPIO_OType_OD;
 	//SCL
 	xGpio.GPIO_Pin = BITMASK(p->def->sclpin);
-	stm32_GpioClockEnable(p->def->sclport);
+	arch_GpioClockEnable(p->def->sclport);
 	GPIO_SetBits(arch_GpioPortBase(p->def->sclport), BITMASK(p->def->sclpin));
 	GPIO_Init(arch_GpioPortBase(p->def->sclport), &xGpio);
 	//SDA
 	xGpio.GPIO_Pin = BITMASK(p->def->sdapin);
-	stm32_GpioClockEnable(p->def->sdaport);
+	arch_GpioClockEnable(p->def->sdaport);
 	GPIO_SetBits(arch_GpioPortBase(p->def->sdaport), BITMASK(p->def->sdapin));
 	GPIO_Init(arch_GpioPortBase(p->def->sdaport), &xGpio);
 

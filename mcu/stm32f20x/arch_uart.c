@@ -5,7 +5,7 @@
 
 
 //Private Variables
-static USART_TypeDef * const stm32_tblUartId[] =
+static USART_TypeDef * const stm32_tbl_uartid[] =
 {
 	USART1,
 	USART2,
@@ -23,7 +23,6 @@ static u8 uartid_mcu2dev[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 //-------------------------------------------------------------------------
 void arch_UartInit(uart_t *p)
 {
-	uart_para_t xUart;
 	t_uart_def *pDef = p->def;
 	int nirq;
 	GPIO_InitTypeDef xGpio;
@@ -32,7 +31,7 @@ void arch_UartInit(uart_t *p)
 
 	uartid_mcu2dev[pDef->id] = p - &dev_Uart[0];
 
-	pUart = stm32_tblUartId[pDef->id];
+	pUart = stm32_tbl_uartid[pDef->id];
 	switch (pDef->id)
 	{
 	case 0:
@@ -43,9 +42,11 @@ void arch_UartInit(uart_t *p)
 		/* Enable the USART1 Interrupt */
 		nirq = USART1_IRQn;
 		GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);
+#if SMARTCARD_ENABLE
 		if (pDef->fun == UART_FUN_SC)
 			GPIO_PinAFConfig(GPIOA, GPIO_PinSource8, GPIO_AF_USART1);
 		else
+#endif
 			GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
 		break;
 		
@@ -57,9 +58,11 @@ void arch_UartInit(uart_t *p)
 		/* Enable the USART1 Interrupt */
 		nirq = USART2_IRQn;
 		GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2);
+#if SMARTCARD_ENABLE
 		if (pDef->fun == UART_FUN_SC)
 			GPIO_PinAFConfig(GPIOA, GPIO_PinSource4, GPIO_AF_USART2);
 		else
+#endif
 			GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_USART2);
 		break;
 		
@@ -71,9 +74,11 @@ void arch_UartInit(uart_t *p)
 		/* Enable the USART3 Interrupt */
 		nirq = USART3_IRQn;
 		GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_USART3);
+#if SMARTCARD_ENABLE
 		if (pDef->fun == UART_FUN_SC)
 			GPIO_PinAFConfig(GPIOB, GPIO_PinSource12, GPIO_AF_USART3);
 		else
+#endif
 			GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_USART3);
 		break;
 		
@@ -107,9 +112,11 @@ void arch_UartInit(uart_t *p)
 		/* Enable the USART5 Interrupt */
 		nirq = USART6_IRQn;
 		GPIO_PinAFConfig(GPIOC, GPIO_PinSource6, GPIO_AF_USART6);
+#if SMARTCARD_ENABLE
 		if (pDef->fun == UART_FUN_SC)
 			GPIO_PinAFConfig(GPIOC, GPIO_PinSource8, GPIO_AF_USART6);
 		else
+#endif
 			GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_USART6);
 		break;
 		
@@ -124,44 +131,12 @@ void arch_UartInit(uart_t *p)
 	//Tx
 	xGpio.GPIO_Pin = BITMASK(pDef->txpin);
 	xGpio.GPIO_Mode = GPIO_Mode_AF;
-#if SMARTCARD_ENABLE
-	if (pDef->fun == UART_FUN_SC)
-	{
-		xGpio.GPIO_OType = GPIO_OType_OD;
-	}
-	else
-#endif
-	{
-		if (pDef->pinmode == DEV_PIN_OD)
-			xGpio.GPIO_OType = GPIO_OType_OD;
-		else
-			xGpio.GPIO_OType = GPIO_OType_PP;
-	}
-	stm32_GpioClockEnable(pDef->txport);
+	xGpio.GPIO_OType = pDef->pinmode == DEV_PIN_OD ? GPIO_OType_OD :GPIO_OType_PP;
+	arch_GpioClockEnable(pDef->txport);
 	GPIO_Init(arch_GpioPortBase(pDef->txport), &xGpio);
 	
 	//Rx
 	xGpio.GPIO_Pin = BITMASK(pDef->rxpin);
-#if SMARTCARD_ENABLE
-	if (pDef->fun == UART_FUN_SC)
-	{
-		xGpio.GPIO_Mode = GPIO_Mode_OUT;
-	}
-	else
-#endif
-	{
-		xGpio.GPIO_Mode = GPIO_Mode_AF;
-	}
-
-	if (pDef->pinmode == DEV_PIN_OD)
-		xGpio.GPIO_OType = GPIO_OType_OD;
-	else
-		xGpio.GPIO_OType = GPIO_OType_PP;
-
-	stm32_GpioClockEnable(pDef->rxport);
-	GPIO_Init(arch_GpioPortBase(pDef->rxport), &xGpio);
-	
-	//Clock
 #if SMARTCARD_ENABLE
 	if (pDef->fun == UART_FUN_SC)
 	{
@@ -177,15 +152,19 @@ void arch_UartInit(uart_t *p)
 
 		//Fun
 		xGpio.GPIO_Pin = BITMASK(pDef->fpin);
-		stm32_GpioClockEnable(pDef->fport);
-		xGpio.GPIO_Mode = GPIO_Mode_AF;
-		
-		if (pDef->pinmode == DEV_PIN_OD)
-			xGpio.GPIO_OType = GPIO_OType_OD;
-		else
-			xGpio.GPIO_OType = GPIO_OType_PP;
-		
+		arch_GpioClockEnable(pDef->fport);
 		GPIO_Init(arch_GpioPortBase(pDef->fport), &xGpio);
+
+		xGpio.GPIO_Mode = GPIO_Mode_OUT;
+	}
+#endif
+	arch_GpioClockEnable(pDef->rxport);
+	GPIO_Init(arch_GpioPortBase(pDef->rxport), &xGpio);
+	
+	//Clock
+#if SMARTCARD_ENABLE
+	if (pDef->fun == UART_FUN_SC)
+	{
 		xUartClock.USART_Clock = USART_Clock_Enable;
 	}
 	else
@@ -197,12 +176,6 @@ void arch_UartInit(uart_t *p)
 	xUartClock.USART_CPHA = USART_CPHA_1Edge;
 	xUartClock.USART_LastBit = USART_LastBit_Enable;
 	USART_ClockInit(pUart, &xUartClock);
-
-	xUart.baud = 9677;
-	xUart.pari = UART_PARI_EVEN;
-	xUart.data = UART_DATA_8D;
-	xUart.stop = UART_STOP_1_5D;
-	arch_UartOpen(pDef->id, &xUart);
 
 #if SMARTCARD_ENABLE
 	if (pDef->fun == UART_FUN_SC)
@@ -220,7 +193,7 @@ void arch_UartInit(uart_t *p)
 sys_res arch_UartOpen(int nId, uart_para_t *pPara)
 {
 	USART_InitTypeDef xUartPara;
-	USART_TypeDef *pUart = stm32_tblUartId[nId];
+	USART_TypeDef *pUart = stm32_tbl_uartid[nId];
 
 	switch (pPara->stop)
 	{
@@ -259,10 +232,7 @@ sys_res arch_UartOpen(int nId, uart_para_t *pPara)
 		break;
 #endif
 	default:
-		if (pPara->pari == UART_PARI_NO)
-			xUartPara.USART_WordLength = USART_WordLength_8b;
-		else
-			xUartPara.USART_WordLength = USART_WordLength_9b;
+		xUartPara.USART_WordLength = pPara->pari == UART_PARI_NO ? USART_WordLength_8b : USART_WordLength_9b;
 		break;
 	}
 	
@@ -285,7 +255,7 @@ sys_res arch_UartOpen(int nId, uart_para_t *pPara)
 void arch_UartTxIEnable(int nId)
 {
 
-	stm32_tblUartId[nId]->CR1 |= USART_FLAG_TXE | USART_FLAG_TC;
+	stm32_tbl_uartid[nId]->CR1 |= (USART_FLAG_TXE | USART_FLAG_TC);
 	arch_UartISR(nId);
 }
 #endif
@@ -295,7 +265,7 @@ void arch_UartTxIEnable(int nId)
 //-------------------------------------------------------------------------
 void arch_UartSendChar(int nId, const int nData)
 {
-	USART_TypeDef *pUart = stm32_tblUartId[nId];
+	USART_TypeDef *pUart = stm32_tbl_uartid[nId];
 
 	while ((pUart->SR & USART_FLAG_TXE) == 0);
 	pUart->DR = nData;
@@ -306,7 +276,7 @@ void arch_UartSendChar(int nId, const int nData)
 //-------------------------------------------------------------------------
 int arch_UartGetChar(int nId)
 {
-	USART_TypeDef *pUart = stm32_tblUartId[nId];
+	USART_TypeDef *pUart = stm32_tbl_uartid[nId];
 
 	while ((pUart->SR & USART_FLAG_RXNE) == 0);
 	
@@ -318,7 +288,7 @@ int arch_UartGetChar(int nId)
 //-------------------------------------------------------------------------
 void arch_UartISR(int nId)
 {
-	USART_TypeDef *pUart = stm32_tblUartId[nId];
+	USART_TypeDef *pUart = stm32_tbl_uartid[nId];
 	uart_t *p;
 	int c, opened;
 

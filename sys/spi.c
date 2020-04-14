@@ -14,12 +14,12 @@ spi_t dev_Spi[BSP_SPI_QTY];
 //Output         : None
 //Return         : None
 //-------------------------------------------------------------------------
-spi_t *spi_Open(int nId, size_t nTmo)
+spi_t *spi_Open(int id, size_t tmo)
 {
-	spi_t *p = &dev_Spi[nId];
+	spi_t *p = &dev_Spi[id];
 
 #if OS_TYPE
-	if (dev_Open(&p->parent, nTmo) != SYS_R_OK)
+	if (dev_Open(&p->parent, tmo) != SYS_R_OK)
 		return NULL;
 #endif
 
@@ -54,27 +54,27 @@ sys_res spi_Close(spi_t *p)
 //Output         : None
 //Return         : None
 //-------------------------------------------------------------------------
-sys_res spi_Config(spi_t *p, int nSckMode, int nLatch, int nSpeed)
+sys_res spi_Config(spi_t *p, int mode, int speed)
 {
 
-	p->sckmode = nSckMode;
-	p->latchmode = nLatch;
-	p->speed = nSpeed;
 #if SPI_SOFTWARE
+	p->sckmode = mode & 1 ? 1 : 0;
+	p->latchmode = mode & 1 ? 1 : 0;
+	p->speed = speed;
 	spibus_Config(p);
 #else
-	arch_SpiConfig(p);
+	arch_SpiConfig(p, mode, speed);
 #endif
 	return SYS_R_OK;
 }
 
 #if SPI_SEL_ENABLE
-void spi_CsSel(spi_t *p, int nId)
+void spi_CsSel(spi_t *p, int id)
 {
 
-	if (p->csid != nId)
+	if (p->csid != id)
 	{
-		p->csid = nId;
+		p->csid = id;
 #if HC138_ENABLE
 		hc138_Set(p->csid);
 #endif
@@ -95,18 +95,16 @@ sys_res spi_Start(spi_t *p)
 	p->ste = SPI_S_BUSY;
 #if SPI_SOFTWARE
 	spibus_Start(p);
-#else
 #endif
 
 	return SYS_R_OK;
 }
 
-sys_res spi_SendChar(spi_t *p, u8 nData)
+sys_res spi_SendChar(spi_t *p, u8 data)
 {
 
 #if SPI_SOFTWARE
-	spibus_SendChar(p, nData);
-#else
+	spibus_SendChar(p, data);
 #endif
 
 	return SYS_R_OK;
@@ -138,7 +136,7 @@ sys_res spi_End(spi_t *p)
 //Output         : None
 //Return         : None
 //-------------------------------------------------------------------------
-sys_res spi_Send(spi_t *p, const void *pData, size_t nLen)
+sys_res spi_Send(spi_t *p, const void *send, size_t len)
 {
 	sys_res res;
 
@@ -150,9 +148,9 @@ sys_res spi_Send(spi_t *p, const void *pData, size_t nLen)
 #endif
 	p->ste = SPI_S_BUSY;
 #if SPI_SOFTWARE
-	res = spibus_Send(p, pData, nLen);
+	res = spibus_Send(p, send, len);
 #else
-	res = arch_SpiSend(p, pData, nLen);
+	res = arch_SpiSend(p, send, len);
 #endif
 	p->ste = SPI_S_IDLE;
 
@@ -167,7 +165,7 @@ sys_res spi_Send(spi_t *p, const void *pData, size_t nLen)
 //Output         : None
 //Return         : None
 //-------------------------------------------------------------------------
-sys_res spi_Recv(spi_t *p, void *pRec, size_t nLen)
+sys_res spi_Recv(spi_t *p, void *rec, size_t len)
 {
  	sys_res res;
 
@@ -179,9 +177,9 @@ sys_res spi_Recv(spi_t *p, void *pRec, size_t nLen)
 #endif
 	p->ste = SPI_S_BUSY;
 #if SPI_SOFTWARE
-	res = spibus_Recv(p, pRec, nLen);
+	res = spibus_Recv(p, rec, len);
 #else
-	res = arch_SpiRecv(p, pRec, nLen);
+	res = arch_SpiRecv(p, rec, len);
 #endif
 	p->ste = SPI_S_IDLE;
 
@@ -208,7 +206,7 @@ sys_res spi_Transce(spi_t *p, const void *pCmd, size_t nCmdLen, void *pRec, size
 #endif
 	p->ste = SPI_S_BUSY;
 #if SPI_SOFTWARE
-	res = spibus_Transce(p, pCmd, nCmdLen, pRec, nRecLen);
+	res = spibus_TransThenRecv(p, pCmd, nCmdLen, pRec, nRecLen);
 #else
 	res = arch_SpiTransce(p, pCmd, nCmdLen, pRec, nRecLen);
 #endif

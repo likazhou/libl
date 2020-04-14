@@ -74,7 +74,7 @@ void arch_PwmConf(int nPort, int nPin, int nMode, int nFreq)
 	else
 		xGpio.GPIO_OType = GPIO_OType_PP;
 	
-	stm32_GpioClockEnable(nPort);
+	arch_GpioClockEnable(nPort);
 	GPIO_Init(arch_GpioPortBase(nPort), &xGpio);
 	arch_PwmAFConf(nPort, nPin);
 

@@ -7,13 +7,6 @@
 
 //Internal Functions
 #if OS_TYPE
-static void stm32_OsTickInit()
-{
-
-	SysTick_Config(MCU_CLOCK / (1000 / OS_TICK_MS));
-	SysTick->CTRL |= SysTick_CLKSource_HCLK;
-}
-#endif
 
 static void stm32_RccInit()
 {
@@ -55,14 +48,13 @@ static void stm32_RccInit()
 	
 #if OS_TYPE
 	//SysTick Initialize
-	stm32_OsTickInit();
+	SysTick_Config(MCU_CLOCK / (1000 / OS_TICK_MS));
+	SysTick->CTRL |= SysTick_CLKSource_HCLK;
 #endif
 }
 
 static void stm32_IrqInit()
 {
-
-	SCB->VTOR = NVIC_VectTab_FLASH + BOOTLOADER_SIZE;
 
 #if IRQ_ENABLE
 	arch_IrqPri(EXTI0_IRQn, 0);

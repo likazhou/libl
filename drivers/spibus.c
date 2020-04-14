@@ -25,22 +25,22 @@ static void spibus_Delay(spi_t *p)
 		sys_Delay(MCU_CLOCK / p->speed / 2);
 }
 
-static void spibus_Sck(spi_t *p, int nOut)
+static void spibus_Sck(spi_t *p, int out)
 {
 	t_gpio_def *pIO = tbl_bspSpiDef[p->parent.id];
 
-	if (p->sckmode == SPI_SCKIDLE_HIGH)
-		nOut = nOut ? 0 : 1;
+	if (p->sckmode)
+		out = out ? 0 : 1;
 
-	arch_GpioSet(pIO->port, pIO->pin, nOut);
+	arch_GpioSet(pIO->port, pIO->pin, out);
 	spibus_Delay(p);
 }
 
-static void spibus_Mosi(spi_t *p, int nHL)
+static void spibus_Mosi(spi_t *p, int HL)
 {
 	t_gpio_def *pIO = tbl_bspSpiDef[p->parent.id] + 1;
 
-	arch_GpioSet(pIO->port, pIO->pin, nHL);
+	arch_GpioSet(pIO->port, pIO->pin, HL);
 }
 
 static int spibus_Miso(spi_t *p)
@@ -65,17 +65,17 @@ static void spibus_CeHigh(spi_t *p)
 }
 
 
-static void _spibus_Recv(spi_t *p, u8 *pRec, size_t nLen)
+static void _spibus_Recv(spi_t *p, u8 *rec, size_t len)
 {
 	int i, nData;
 
-	for (; nLen; nLen--)
+	for (; len; len--)
 	{
 		nData = 0;
 		for (i = 0; i < 8; i++)
 		{
 			nData <<= 1;
-			if (p->latchmode == SPI_LATCH_1EDGE)
+			if (p->latchmode == 0)
 			{
 				if (spibus_Miso(p))
 					SETBIT(nData, 0);
@@ -83,7 +83,7 @@ static void _spibus_Recv(spi_t *p, u8 *pRec, size_t nLen)
 			
 			spibus_Sck(p, 1);
 			
-			if (p->latchmode == SPI_LATCH_2EDGE)
+			if (p->latchmode)
 			{
 				if (spibus_Miso(p))
 					SETBIT(nData, 0);
@@ -91,7 +91,7 @@ static void _spibus_Recv(spi_t *p, u8 *pRec, size_t nLen)
 			
 			spibus_Sck(p, 0);
 		}
-		*pRec++ = nData;
+		*rec++ = nData;
 	}
 }
 
@@ -107,7 +107,6 @@ static void _spibus_Recv(spi_t *p, u8 *pRec, size_t nLen)
 //-------------------------------------------------------------------
 //External Functions
 //-------------------------------------------------------------------
-
 sys_res spibus_Init(spi_t *p)
 {
 	tbl_gpio_def pSck = tbl_bspSpiDef[p->parent.id];
@@ -138,23 +137,23 @@ void spibus_Start(spi_t *p)
 #endif
 }
 
-void spibus_SendChar(spi_t *p, u8 nData)
+void spibus_SendChar(spi_t *p, u8 data)
 {
 	int i;
 
 	for (i = 0; i < 8; i++)
 	{
-		if (p->latchmode == SPI_LATCH_1EDGE)
-			spibus_Mosi(p, nData & 0x80);
+		if (p->latchmode == 0)
+			spibus_Mosi(p, data & 0x80);
 		
 		spibus_Sck(p, 1);
 		
-		if (p->latchmode == SPI_LATCH_2EDGE)
-			spibus_Mosi(p, nData & 0x80);
+		if (p->latchmode)
+			spibus_Mosi(p, data & 0x80);
 		
 		spibus_Sck(p, 0);
 
-		nData <<= 1;
+		data <<= 1;
 	}
 }
 
@@ -168,15 +167,15 @@ void spibus_End(spi_t *p)
 }
 
 
-sys_res spibus_Send(spi_t *p, const void *pData, size_t nLen)
+sys_res spibus_Send(spi_t *p, const void *send, size_t len)
 {
-	u8 *pBuf = (u8 *)pData;
+	u8 *data = (u8 *)send;
 
 	spibus_Start(p);
 	
-	for (; nLen; nLen--)
+	for (; len; len--)
 	{
-		spibus_SendChar(p, *pBuf++);
+		spibus_SendChar(p, *data++);
 	}
 	
 	spibus_End(p);
@@ -184,67 +183,73 @@ sys_res spibus_Send(spi_t *p, const void *pData, size_t nLen)
 	return SYS_R_OK;
 }
 
-sys_res spibus_Recv(spi_t *p, void *pRec, size_t nLen)
+sys_res spibus_Recv(spi_t *p, void *rec, size_t len)
 {
 
 	spibus_Start(p);
 	
-	_spibus_Recv(p, pRec, nLen);
+	_spibus_Recv(p, rec, len);
 	
 	spibus_End(p);
 	return SYS_R_OK;
 	
 }
 
-sys_res spibus_Transce(spi_t *p, const void *pCmd, size_t nCmdLen, void *pRec, size_t nRecLen)
+sys_res spibus_TransThenRecv(spi_t *p, const void *send, size_t slen, void *rec, size_t rlen)
 {
-	u8 *pBuf = (u8 *)pCmd;
+	const u8 *data = (const u8 *)send;
 
 	spibus_Start(p);
 	
-	for (; nCmdLen; nCmdLen--)
+	for (; slen; slen--)
 	{
-		spibus_SendChar(p, *pBuf++);
+		spibus_SendChar(p, *data++);
 	}
 	
-	_spibus_Recv(p, pRec, nRecLen);
+	_spibus_Recv(p, rec, rlen);
 	
 	spibus_End(p);
 	
 	return SYS_R_OK;
 }
 
-sys_res spibus_TransChar(spi_t *p, u8 nSend, void *pRec)
+sys_res spibus_Transmit(spi_t *p, const void *send, void *rec, size_t len)
 {
-	u8 *pBuf = (u8 *)pRec;
-	int i, nData = 0;
+	const u8 *psend = (const u8 *)send;
+	u8 *prec = (u8 *)rec;
+	int i, sd, rd;
 
 	spibus_Start(p);
-	
-	for (i = 0; i < 8; i++)
+
+	for (; len; len--)
 	{
-		nData <<= 1;
-		if (p->latchmode == SPI_LATCH_1EDGE)
+		sd = *psend++;
+		rd = 0;
+		for (i = 0; i < 8; i++)
 		{
-			spibus_Mosi(p, nSend & 0x80);
-			if (spibus_Miso(p))
-				SETBIT(nData, 0);
-		}
-		
-		spibus_Sck(p, 1);
-		
-		if (p->latchmode == SPI_LATCH_2EDGE)
-		{
-			spibus_Mosi(p, nSend & 0x80);
-			if (spibus_Miso(p))
-				SETBIT(nData, 0);
-		}
-		
-		spibus_Sck(p, 0);
+			rd <<= 1;
+			if (p->latchmode == 0)
+			{
+				spibus_Mosi(p, sd & 0x80);
+				if (spibus_Miso(p))
+					SETBIT(rd, 0);
+			}
+			
+			spibus_Sck(p, 1);
+			
+			if (p->latchmode)
+			{
+				spibus_Mosi(p, sd & 0x80);
+				if (spibus_Miso(p))
+					SETBIT(rd, 0);
+			}
+			
+			spibus_Sck(p, 0);
 
-		nSend <<= 1;
+			sd <<= 1;
+		}
+		*prec++ = rd;
 	}
-	*pBuf = nData;
 	
 	spibus_End(p);
 	

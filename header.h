@@ -10,18 +10,20 @@ extern "C" {
 
 
 //Include HeaderFiles
-#if (ARCH_TYPE == ARCH_T_STM32F10X_HD) || (ARCH_TYPE == ARCH_T_STM32F10X_MD) || \
-	(ARCH_TYPE == ARCH_T_STM32F10X_CL) || (ARCH_TYPE == ARCH_T_STM32F10X_XL) || \
-	(ARCH_TYPE == ARCH_T_STM32F20X) || \
-	(ARCH_TYPE == ARCH_T_LM3S9X) || (ARCH_TYPE == ARCH_T_LM3S5X) || \
-	(ARCH_TYPE == ARCH_T_LPC176X) || (ARCH_TYPE == ARCH_T_M051X)
+#if ARCH_TYPE == ARCH_T_STM32F40X
+#include <arch/cm4/typedef.h>
+
+#elif	(ARCH_TYPE == ARCH_T_STM32F10X_HD) || (ARCH_TYPE == ARCH_T_STM32F10X_MD) || \
+		(ARCH_TYPE == ARCH_T_STM32F10X_CL) || (ARCH_TYPE == ARCH_T_STM32F10X_XL) || \
+		(ARCH_TYPE == ARCH_T_STM32F20X) || \
+		(ARCH_TYPE == ARCH_T_LM3S9X) || (ARCH_TYPE == ARCH_T_LM3S5X) || \
+		(ARCH_TYPE == ARCH_T_LPC176X) || (ARCH_TYPE == ARCH_T_M051X)
 
 #include <arch/cm3/typedef.h>
 #endif
 
 
-#if (ARCH_TYPE == ARCH_T_STR71X) || \
-	(ARCH_TYPE == ARCH_T_LPC22XX)
+#if (ARCH_TYPE == ARCH_T_STR71X) || (ARCH_TYPE == ARCH_T_LPC22XX)
 
 #include <arch/arm7/typedef.h>
 #endif
@@ -29,9 +31,11 @@ extern "C" {
 
 #include <sys/system.h>
 	
+#if (ARCH_TYPE == ARCH_T_STM32F40X) || (ARCH_TYPE == ARCH_T_STM32F42X)
+#include <mcu/stm32f4xx/arch.h>
 
-#if (ARCH_TYPE == ARCH_T_STM32F10X_HD) || (ARCH_TYPE == ARCH_T_STM32F10X_MD) || \
-	(ARCH_TYPE == ARCH_T_STM32F10X_CL) || (ARCH_TYPE == ARCH_T_STM32F10X_XL)
+#elif	(ARCH_TYPE == ARCH_T_STM32F10X_HD) || (ARCH_TYPE == ARCH_T_STM32F10X_MD) || \
+		(ARCH_TYPE == ARCH_T_STM32F10X_CL) || (ARCH_TYPE == ARCH_T_STM32F10X_XL)
 #include <mcu/stm32f10x/arch.h>
 
 #elif (ARCH_TYPE == ARCH_T_STM32F20X) 

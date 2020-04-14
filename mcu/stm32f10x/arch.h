@@ -17,24 +17,22 @@ extern "C" {
 #include "stm32f10x.h"
 
 
-#include <mcu/stm32f10x/adc.h>
-#include <mcu/stm32f10x/bkp.h>
-#include <mcu/stm32f10x/emac.h>
-#include <mcu/stm32f10x/fsmc.h>
-#include <mcu/stm32f10x/flash.h>
-#include <mcu/stm32f10x/gpio.h>
-#include <mcu/stm32f10x/i2c.h>
-#include <mcu/stm32f10x/iwdg.h>
-#include <mcu/stm32f10x/nand.h>
-#include <mcu/stm32f10x/rtc.h>
-#include <mcu/stm32f10x/spi.h>
-#include <mcu/stm32f10x/timer.h>
-
+#include <mcu/stm32f10x/arch_adc.h>
+#include <mcu/stm32f10x/arch_bkp.h>
+#include <mcu/stm32f10x/arch_emac.h>
+#include <mcu/stm32f10x/arch_flash.h>
+#include <mcu/stm32f10x/arch_fsmc.h>
+#include <mcu/stm32f10x/arch_gpio.h>
+#include <mcu/stm32f10x/arch_i2c.h>
+#include <mcu/stm32f10x/arch_iwdg.h>
+#include <mcu/stm32f10x/arch_nand.h>
+#include <mcu/stm32f10x/arch_rtc.h>
+#include <mcu/stm32f10x/arch_spi.h>
+#include <mcu/stm32f10x/arch_timer.h>
 #if OS_TYPE
-#include <mcu/stm32f10x/uart.h>
+#include <mcu/stm32f10x/arch_uart.h>
 #endif
-
-#include <mcu/stm32f10x/it.h>
+#include <mcu/stm32f10x/arch_it.h>
 
 
 

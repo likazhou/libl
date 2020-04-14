@@ -88,7 +88,7 @@ static spi_t *_spif_SpiGet()
 	spi_t *p;
 	
 	p = spi_Open(SPIF_COMID, OS_TMO_FOREVER);
-	spi_Config(p, SPI_SCKIDLE_LOW, SPI_LATCH_1EDGE, 0);
+	spi_Config(p, SPI_MODE_0, SPI_SPEED_HIGH);
 	return p;
 }
 

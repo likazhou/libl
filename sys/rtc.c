@@ -8,6 +8,8 @@
 #include <drivers/rx802x.c>
 #elif RTC_TYPE == RTC_T_M41T8X
 #include <drivers/m41t8x.c>
+#elif RTC_TYPE == RTC_T_PCF8526X
+#include <drivers/pcf8526x.c>
 #endif
 
 //Private Defines

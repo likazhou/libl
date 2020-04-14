@@ -984,6 +984,7 @@ static int modem_IsPowerOnEnable()
 	p_modem p = &gsm_xModem;
 	int res = 1;
 
+#if RTC_ENABLE
 	if (p->retrytime)
 	{
 		if (p->retryed >= p->retrytime)
@@ -1010,6 +1011,7 @@ static int modem_IsPowerOnEnable()
 			res = 0;
 		}
 	}
+#endif
 	
 	return res;
 }
