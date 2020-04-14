@@ -50,7 +50,7 @@ typedef struct
 	struct dev	parent;
 	u8	ste;
 #if SPI_SEL_ENABLE
-		u8	csid;
+	u8	csid;
 #endif
 #if SPI_SOFTWARE
 	u8	sckmode;

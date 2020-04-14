@@ -59,7 +59,7 @@ sys_res spi_Config(spi_t *p, int mode, int order, int speed)
 
 #if SPI_SOFTWARE
 	p->sckmode = mode & 1 ? 1 : 0;
-	p->latchmode = mode & 1 ? 1 : 0;
+	p->latchmode = mode & 2 ? 1 : 0;
 	p->speed = speed;
 	spibus_Config(p);
 #else
